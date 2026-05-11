@@ -1,0 +1,56 @@
+@startuml Containers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_TOP_DOWN()
+SHOW_PERSON_OUTLINE()
+
+AddElementTag("entra", $bgColor="#000000", $fontColor="#ffffff", $borderColor="#000000")
+
+title MRMS — C4 Level 2: Containers
+
+'---- People ----
+Person(users, "Users (Browser)", "Enters, reviews, and approves resolutions via browser.")
+Person(roles, "Administrator (Browser)", "Manages SharePoint group-based permission roles.")
+Person(userEmail, "Users (Email)", "Sends Email with documents to MRMS.")
+
+System_Ext(entraID, "UN Entra ID", "Authentication \nfor MRMS users", $tags="entra")
+
+'---- External Systems ----
+System_Ext(outlook, "Outlook", "Mailbox mrms@un.org.\nEmail ingestion for incoming resolutions.")
+System_Ext(docUN, "documents.un.org", "Source for adopted resolution documents.")
+System_Ext(powerBI, "Power BI", "Reporting and analytics\nover mandate data.")
+
+'---- MRMS System ----
+System_Boundary(mrms, "MRMS — UN O365 Tenant - Application Zone") {
+    Container(sharePointOnline, "SharePoint Online (SPFx)", "Microsoft 365 / SharePoint SPFx", "Hosts the SPFx solution. Web parts for\ndata entry, resolution management,\ndashboards, and oral statement generation.")
+    Container(powerAutomate, "Power Automate", "Microsoft 365", "Workflow automation: email ingestion (based on Safe List filter),approvals, notifications, OP extraction,\nand bulk operations.")
+    Container(azureFunction, "Azure Function API", "Azure Functions", "Document generation\nand OP parsing.")
+}
+
+System_Boundary(backend, "Backend Zone") {
+    ContainerDb(listsLibraries, "Lists & Libraries", "SharePoint", "Data store: Resolutions, Mandates, OPs, PBI lists, Status, CostRates, SafeList, Error Logs.")
+}
+
+'---- Relationships ----
+'BiRel_R(users, entraID, "Authenticates", "OAuth 2.0")
+Rel_D(users, entraID, "Authenticates", "OAuth 2.0")
+Rel_U(roles, entraID, "Authenticates", "OAuth 2.0")
+Rel_D(users, sharePointOnline, "Interacts")
+Rel_U(roles, sharePointOnline, "Configures permissions")
+Rel_U(userEmail, outlook, "Email with formatted subject")
+
+BiRel(sharePointOnline, listsLibraries, "Reads/writes", "PUSH PULL/ Mandates, Resolutions, PBIs, CostRates")
+Rel_R(sharePointOnline, azureFunction, "Calls for OS generation", "PUSH/Resolution, Mandates, Forms data")
+
+Rel_R(powerAutomate, listsLibraries, "Triggers workflows", "PULL/Changes in Status list")
+
+Rel_D(powerAutomate, outlook, "Monitors mailbox", "PULL/Trigger on new email with SafeList filter")
+Rel_L(powerAutomate, azureFunction, "Calls for parsing OPs", "PUSH/.docx attachment from email")
+
+Rel_D(azureFunction, listsLibraries, "Writes back generated documents and extracted data", "PUSH/OPs, OS")
+
+Rel_U(powerBI, listsLibraries, "Reads data", "PULL/Mandates, Resolutions, PBIs")
+Rel_D(docUN, azureFunction, "Documents fetched", "PULL/ Adopted Resolution docx")
+
+SHOW_LEGEND()
+@enduml

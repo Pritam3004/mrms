@@ -1,0 +1,2567 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_office365": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedoffice365_4aca4"
+        },
+        "api": {
+          "name": "shared_office365"
+        }
+      },
+      "shared_sharepointonline_2": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedsharepointonline_63e53"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      },
+      "shared_sharepointonline": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedsharepointonline_e8f69"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "When_a_new_email_arrives_in_a_shared_mailbox_(V2)": {
+          "recurrence": {
+            "frequency": "Minute",
+            "interval": 1
+          },
+          "evaluatedRecurrence": {
+            "frequency": "Minute",
+            "interval": 1
+          },
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "metadata": {
+            "operationMetadataId": "77cd055a-cbc4-4d7c-84d8-cea50bf93eba"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "mailboxAddress": "mrms-staging@un.org;",
+              "importance": "Any",
+              "hasAttachments": false,
+              "includeAttachments": true,
+              "folderId": "Inbox"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+              "connectionName": "shared_office365",
+              "operationId": "SharedMailboxOnNewEmailV2"
+            },
+            "authentication": "@parameters('$authentication')"
+          },
+          "conditions": [
+            {
+              "expression": "@not(contains(toLower(triggerOutputs()?['body/subject']), 're:'))"
+            },
+            {
+              "expression": "@not(contains(toLower(triggerOutputs()?['body/subject']), 'fw:'))"
+            },
+            {
+              "expression": "@or(contains(toLower(replace(triggerOutputs()?['body/subject'], ' ', '')), 'beamendment:'),contains(toLower(replace(triggerOutputs()?['body/subject'], ' ', '')), 'bewithdrawal:'))"
+            }
+          ]
+        }
+      },
+      "actions": {
+        "Var_Action": {
+          "runAfter": {
+            "Initialize_variable_short_end_resolutions_multiline": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d4259e80-0708-4767-ad57-a3e65d32b75e"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Action",
+                "type": "string",
+                "value": "@{trim(toUpper(split(triggerOutputs()?['body/subject'],':')[0]))}"
+              }
+            ]
+          }
+        },
+        "Res_Item_Id": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "fa360e02-1b54-46b3-8947-e4289dd57ce1"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ResId",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Foreach_add_attachments_to_Variables": {
+          "foreach": "@triggerOutputs()?['body/attachments']",
+          "actions": {
+            "Condition_3": {
+              "actions": {
+                "Append_to_Attach_Approval": {
+                  "runAfter": {
+                    "Append_to_Attach_Email": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "c40b397d-2b6e-4a9f-b2b1-fbf5fc914269"
+                  },
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "VarAttachApprove",
+                    "value": {
+                      "Name": "@{items('Foreach_add_attachments_to_Variables')?['name']}",
+                      "content": {
+                        "$content-type": "@{items('Foreach_add_attachments_to_Variables')?['contentType']}",
+                        "$content": "@items('Foreach_add_attachments_to_Variables')?['contentBytes']"
+                      }
+                    }
+                  }
+                },
+                "Append_to_Attach": {
+                  "metadata": {
+                    "operationMetadataId": "8145ced9-2b7b-42f6-ac48-d012d581f0ff"
+                  },
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "varAttach",
+                    "value": {
+                      "Name": "@{items('Foreach_add_attachments_to_Variables')?['name']}",
+                      "ContentBytes": {
+                        "$content-type": "@{items('Foreach_add_attachments_to_Variables')?['contentType']}",
+                        "$content": "@items('Foreach_add_attachments_to_Variables')?['contentBytes']"
+                      }
+                    }
+                  }
+                },
+                "Append_to_Attach_Email": {
+                  "runAfter": {
+                    "Append_to_Attach": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "7e88628e-8e0d-4a02-8701-5e8431942abb"
+                  },
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "VarAttachEmail",
+                    "value": {
+                      "Name": "@{items('Foreach_add_attachments_to_Variables')?['name']}",
+                      "ContentBytes": {
+                        "$content-type": "@{items('Foreach_add_attachments_to_Variables')?['contentType']}",
+                        "$content": "@items('Foreach_add_attachments_to_Variables')?['contentBytes']"
+                      }
+                    }
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "expression": {
+                "and": [
+                  {
+                    "not": {
+                      "contains": [
+                        "@toLower(items('Foreach_add_attachments_to_Variables')['Name'])",
+                        ".jpg"
+                      ]
+                    }
+                  },
+                  {
+                    "not": {
+                      "contains": [
+                        "@toLower(items('Foreach_add_attachments_to_Variables')['Name'])",
+                        ".png"
+                      ]
+                    }
+                  },
+                  {
+                    "not": {
+                      "contains": [
+                        "@toLower(items('Foreach_add_attachments_to_Variables')['Name'])",
+                        ".jpeg"
+                      ]
+                    }
+                  },
+                  {
+                    "not": {
+                      "contains": [
+                        "@toLower(items('Foreach_add_attachments_to_Variables')['Name'])",
+                        ".gif"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "ea18a97e-61e6-4c9b-aadc-07ad7346e2f8"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "varAttachApprove": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c31b22b5-31f8-4e98-a24c-ed4ce44cd300"
+          },
+          "type": "Foreach"
+        },
+        "varAttach": {
+          "runAfter": {
+            "currComments": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "6e2944fc-c786-44b5-bd93-976488d75d12"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varAttach",
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "varAttachApprove": {
+          "runAfter": {
+            "varAttachEmail": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c7a82c55-d1e3-41b3-9a00-1169bac63fe7"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "VarAttachApprove",
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "currComments": {
+          "runAfter": {
+            "Res_Item_Id": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c6f0c523-2e8a-4eec-a989-bd74298ce1f9"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "currComments",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "varAttachEmail": {
+          "runAfter": {
+            "varAction2": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "7812157f-c309-4498-a6ed-e9dc8e78c589"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "VarAttachEmail",
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_Group-DCM-IS": {
+          "runAfter": {
+            "Initialize_variable_IsResolutionConfirmed": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "183c9ecb-e3f0-478a-890d-54a366ed64f0"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Group-DCM-IS",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "varAction2": {
+          "runAfter": {
+            "varAttach": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "e13273b7-96d1-4f46-9ffa-4482505e374d"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Action2",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_Empty_array_variable": {
+          "runAfter": {
+            "Foreach_add_attachments_to_Variables": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "44e0ac10-0dad-4ae6-b7c9-acdb789b6420"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "EmptyArray",
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "Initialize_DraftResolution_variable": {
+          "runAfter": {
+            "Initialize_Empty_array_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "e7894c12-970f-4364-a8fb-886e20d85a6b"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "DraftResolution",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_Old_DraftResolution_variable": {
+          "runAfter": {
+            "Initialize_DraftResolution_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "fed61189-c2b0-4fe6-a03b-f5e9a3d3be05"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "OldDraftResolution",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_ResID_for_NEW_and_Amendment": {
+          "runAfter": {
+            "Initialize_Old_DraftResolution_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "63aba251-4a9d-4554-af6f-6cf54834462e"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "CheckResID",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Check_if_subject_line_is_valid": {
+          "actions": {
+            "Send_an_HTTP_request_to_get_Resolutions_Content_Type_Id": {
+              "runAfter": {
+                "Compose_Resolutions": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "6ed75116-0e53-45b7-914b-afbf91fcf6a7"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                  "parameters/method": "GET",
+                  "parameters/uri": "/_api/web/lists/getbytitle('Resolutions')/contenttypes?$filter=Name%20eq%20%27Resolution_DS%27",
+                  "parameters/headers": {
+                    "Content-Type": "application/json;odata=nometadata",
+                    "Accept": "application/json;odata=nometadata"
+                  }
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "connectionName": "shared_sharepointonline_2",
+                  "operationId": "HttpRequest"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Parse_JSON": {
+              "runAfter": {
+                "Send_an_HTTP_request_to_get_Resolutions_Content_Type_Id": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "3f865174-08bb-406c-ac16-f879d36dd8d8"
+              },
+              "type": "ParseJson",
+              "inputs": {
+                "content": "@outputs('Send_an_HTTP_request_to_get_Resolutions_Content_Type_Id')?['body']",
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "ClientFormCustomFormatter": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "DisplayFormTemplateName": {
+                            "type": "string"
+                          },
+                          "DisplayFormUrl": {
+                            "type": "string"
+                          },
+                          "DocumentTemplate": {
+                            "type": "string"
+                          },
+                          "DocumentTemplateUrl": {
+                            "type": "string"
+                          },
+                          "EditFormTemplateName": {
+                            "type": "string"
+                          },
+                          "EditFormUrl": {
+                            "type": "string"
+                          },
+                          "Group": {
+                            "type": "string"
+                          },
+                          "Hidden": {
+                            "type": "boolean"
+                          },
+                          "Id": {
+                            "type": "object",
+                            "properties": {
+                              "StringValue": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "JSLink": {
+                            "type": "string"
+                          },
+                          "MobileDisplayFormUrl": {
+                            "type": "string"
+                          },
+                          "MobileEditFormUrl": {
+                            "type": "string"
+                          },
+                          "MobileNewFormUrl": {
+                            "type": "string"
+                          },
+                          "Name": {
+                            "type": "string"
+                          },
+                          "NewFormTemplateName": {
+                            "type": "string"
+                          },
+                          "NewFormUrl": {
+                            "type": "string"
+                          },
+                          "ReadOnly": {
+                            "type": "boolean"
+                          },
+                          "SchemaXml": {
+                            "type": "string"
+                          },
+                          "Scope": {
+                            "type": "string"
+                          },
+                          "Sealed": {
+                            "type": "boolean"
+                          },
+                          "StringId": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "ClientFormCustomFormatter",
+                          "Description",
+                          "DisplayFormTemplateName",
+                          "DisplayFormUrl",
+                          "DocumentTemplate",
+                          "DocumentTemplateUrl",
+                          "EditFormTemplateName",
+                          "EditFormUrl",
+                          "Group",
+                          "Hidden",
+                          "Id",
+                          "JSLink",
+                          "MobileDisplayFormUrl",
+                          "MobileEditFormUrl",
+                          "MobileNewFormUrl",
+                          "Name",
+                          "NewFormTemplateName",
+                          "NewFormUrl",
+                          "ReadOnly",
+                          "SchemaXml",
+                          "Scope",
+                          "Sealed",
+                          "StringId"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "ContentTypeId": {
+              "runAfter": {
+                "Parse_JSON": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "70556843-8d5a-4677-8633-dc316a8e0302"
+              },
+              "type": "Compose",
+              "inputs": "@first(body('Parse_JSON')?['value'])['StringId']"
+            },
+            "Compose_Resolutions": {
+              "metadata": {
+                "operationMetadataId": "910d8cbc-2649-40d5-b1fe-6a58d05f5ed7"
+              },
+              "type": "Compose",
+              "inputs": "@trim(split(split(triggerOutputs()?['body/subject'],':')[1],'|')[2])"
+            },
+            "Var_Session": {
+              "runAfter": {
+                "ContentTypeId": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "5dd3e6c0-480b-4a0a-a9ff-6e2f4c47cb05"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "Session",
+                "value": "@{trim(split(split(triggerOutputs()?['body/subject'],':')[1],'|')[0])}"
+              }
+            },
+            "Var_Resolution_Title": {
+              "runAfter": {
+                "Var_Session": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "060d6f64-9594-4eef-a34d-57546211c17c"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "ResolutionTitle",
+                "value": "@{trim(split(triggerOutputs()?['body/subject'],'|')[3])}"
+              }
+            }
+          },
+          "runAfter": {
+            "Initialize_variable_Transformed": [
+              "Succeeded"
+            ]
+          },
+          "else": {
+            "actions": {}
+          },
+          "expression": {
+            "or": [
+              {
+                "equals": [
+                  "@variables('Action')",
+                  "BE AMENDMENT"
+                ]
+              },
+              {
+                "equals": [
+                  "@variables('Action')",
+                  "BE WITHDRAWAL"
+                ]
+              }
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "3e916e3b-4374-4b52-87d3-3aeca572b6b3"
+          },
+          "type": "If"
+        },
+        "Initialize_variable_Session": {
+          "runAfter": {
+            "Initialize_ResID_for_NEW_and_Amendment": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "ab618330-0142-44f6-9ede-0ab013f2ebcd"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Session",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_Resolution_Title": {
+          "runAfter": {
+            "Initialize_variable_Session": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "fbb1596a-db91-4151-8445-8d55d9e971f8"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ResolutionTitle",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable": {
+          "runAfter": {
+            "Initialize_variable_Resolution_Title": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "99d96978-b4f2-45d1-8e06-e3679c238cae"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ProcessDraftRes",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_StatusID": {
+          "runAfter": {
+            "Initialize_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "6ff5764f-e101-456c-81a6-7275d9da38bb"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "StatusID",
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_FileNameWithoutExtn": {
+          "runAfter": {
+            "Initialize_variable_StatusID": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "bbfff069-32c7-4915-92a2-2b2d19a5535e"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "FileNameWithoutExtn",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_DraftResArr": {
+          "runAfter": {
+            "Initialize_variable_FileNameWithoutExtn": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "e240001d-b92a-4fe6-8d31-9e7338899c40"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "DraftResArr",
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_ResolutionName": {
+          "runAfter": {
+            "Initialize_variable_DraftResArr": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "3f3db844-9e46-44fe-a001-fd267d73fbb2"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "IncomingResolutionName",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Loop_all_resolutions": {
+          "foreach": "@split(outputs('Compose_Resolutions'),',')",
+          "actions": {
+            "Set_variable_ResolutionName": {
+              "metadata": {
+                "operationMetadataId": "f11ed7eb-97cc-42fe-b452-ea8e875bb4ad"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "IncomingResolutionName",
+                "value": "@{trim(items('Loop_all_resolutions'))}"
+              }
+            },
+            "Condition": {
+              "actions": {
+                "Set_DraftResolution_variable": {
+                  "metadata": {
+                    "operationMetadataId": "6d17f522-ec3c-4572-9bce-52fd63770f57"
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "DraftResolution",
+                    "value": "@{concat(trim(split(split(triggerOutputs()?['body/subject'],':')[1],'|')[1]),'/',trim(variables('IncomingResolutionName')))}"
+                  }
+                },
+                "Switch": {
+                  "runAfter": {
+                    "Set_DraftResolution_variable": [
+                      "Succeeded"
+                    ]
+                  },
+                  "cases": {
+                    "Case_WRITTEN_AMENDMENT": {
+                      "case": "BE AMENDMENT",
+                      "actions": {
+                        "Parse_Draft_Resolution_ID": {
+                          "runAfter": {
+                            "HTTP_request_to_Get_Draft_Resolution_ID_for_validation": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "995aa7f2-2c04-4ec7-ae0a-047a45c4ef40"
+                          },
+                          "type": "ParseJson",
+                          "inputs": {
+                            "content": "@body('HTTP_request_to_Get_Draft_Resolution_ID_for_validation')",
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Id": {
+                                        "type": "integer"
+                                      },
+                                      "ID": {
+                                        "type": "integer"
+                                      },
+                                      "DraftResolution": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "Id",
+                                      "DraftResolution",
+                                      "ID"
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "Set_variable_Check_ResId": {
+                          "runAfter": {
+                            "Parse_Draft_Resolution_ID": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "3c4977b5-5f27-4d82-bd6c-81a747b91ecc"
+                          },
+                          "type": "SetVariable",
+                          "inputs": {
+                            "name": "CheckResID",
+                            "value": "@{if(empty(body('Parse_Draft_Resolution_ID')?['value']),'NotExists',first(body('Parse_Draft_Resolution_ID')?['value'])['Id'])}"
+                          }
+                        },
+                        "Condition_to_check_if_resolution_not_exists": {
+                          "actions": {
+                            "Slug": {
+                              "metadata": {
+                                "operationMetadataId": "ad84e2cd-2a83-4ddd-9773-ee5f61d4ef2e"
+                              },
+                              "type": "Compose",
+                              "inputs": "@concat('https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV/Resolutions/',replace(variables('DraftResolution'),'/','_'),'|',outputs('ContentTypeId'))"
+                            },
+                            "Send_an_HTTP_request_to_SharePoint_to_create_doc_set": {
+                              "runAfter": {
+                                "Slug": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "f0bef6f3-0a8d-427d-90fa-b49f2a9af6dc"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                  "parameters/method": "POST",
+                                  "parameters/uri": "_vti_bin/listdata.svc/Resolutions",
+                                  "parameters/headers": {
+                                    "Accept": "application/json;odata=verbose",
+                                    "Slug": "@{outputs('Slug')}"
+                                  }
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "connectionName": "shared_sharepointonline_2",
+                                  "operationId": "HttpRequest"
+                                },
+                                "authentication": "@parameters('$authentication')"
+                              }
+                            },
+                            "ParseGeneratedDocSetPayload": {
+                              "runAfter": {
+                                "Send_an_HTTP_request_to_SharePoint_to_create_doc_set": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "be95856c-47b6-49a0-a0f9-00a001dc21b9"
+                              },
+                              "type": "ParseJson",
+                              "inputs": {
+                                "content": "@outputs('Send_an_HTTP_request_to_SharePoint_to_create_doc_set')?['body']",
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "d": {
+                                      "type": "object",
+                                      "properties": {
+                                        "__metadata": {
+                                          "type": "object",
+                                          "properties": {
+                                            "uri": {
+                                              "type": "string"
+                                            },
+                                            "etag": {
+                                              "type": "string"
+                                            },
+                                            "type": {
+                                              "type": "string"
+                                            },
+                                            "edit_media": {
+                                              "type": "string"
+                                            },
+                                            "media_src": {
+                                              "type": "string"
+                                            },
+                                            "content_type": {
+                                              "type": "string"
+                                            }
+                                          }
+                                        },
+                                        "ContentTypeID": {
+                                          "type": "string"
+                                        },
+                                        "Name": {
+                                          "type": "string"
+                                        },
+                                        "ComplianceAssetId": {},
+                                        "Title": {},
+                                        "Description": {},
+                                        "DutyStation": {},
+                                        "ServicingOffice": {},
+                                        "InterGovernmentalBody": {},
+                                        "Session": {},
+                                        "SessionYear": {},
+                                        "SessionMonth": {},
+                                        "DraftResolution": {},
+                                        "AdoptedResolution": {},
+                                        "AdoptedResolutionNote": {},
+                                        "ResolutionTitle": {},
+                                        "RelatedHistoricalResolution": {},
+                                        "DocStage": {
+                                          "type": "object",
+                                          "properties": {
+                                            "__deferred": {
+                                              "type": "object",
+                                              "properties": {
+                                                "uri": {
+                                                  "type": "string"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "DocStageValue": {},
+                                        "KeyPoints": {},
+                                        "Comments": {},
+                                        "ResolutionStatus": {},
+                                        "Tags": {},
+                                        "Description0": {},
+                                        "CountryThematic": {},
+                                        "Id": {
+                                          "type": "integer"
+                                        },
+                                        "ContentType": {},
+                                        "Created": {
+                                          "type": "string"
+                                        },
+                                        "CreatedBy": {
+                                          "type": "object",
+                                          "properties": {
+                                            "__deferred": {
+                                              "type": "object",
+                                              "properties": {
+                                                "uri": {
+                                                  "type": "string"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "CreatedById": {
+                                          "type": "integer"
+                                        },
+                                        "Modified": {
+                                          "type": "string"
+                                        },
+                                        "ModifiedBy": {
+                                          "type": "object",
+                                          "properties": {
+                                            "__deferred": {
+                                              "type": "object",
+                                              "properties": {
+                                                "uri": {
+                                                  "type": "string"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "ModifiedById": {
+                                          "type": "integer"
+                                        },
+                                        "CopySource": {},
+                                        "ApprovalStatus": {
+                                          "type": "string"
+                                        },
+                                        "Path": {
+                                          "type": "string"
+                                        },
+                                        "CheckedOutTo": {
+                                          "type": "object",
+                                          "properties": {
+                                            "__deferred": {
+                                              "type": "object",
+                                              "properties": {
+                                                "uri": {
+                                                  "type": "string"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "CheckedOutToId": {},
+                                        "VirusStatus": {
+                                          "type": "string"
+                                        },
+                                        "IsCurrentVersion": {
+                                          "type": "boolean"
+                                        },
+                                        "Owshiddenversion": {
+                                          "type": "integer"
+                                        },
+                                        "Version": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "ForEach_to_add_all_attachments_to_Resolution_DS": {
+                              "foreach": "@variables('varAttach')",
+                              "actions": {
+                                "Match_filename_with_resolution_name": {
+                                  "actions": {
+                                    "Create_file": {
+                                      "metadata": {
+                                        "operationMetadataId": "be3be727-9c7d-4de5-ad28-740004230814"
+                                      },
+                                      "type": "OpenApiConnection",
+                                      "inputs": {
+                                        "parameters": {
+                                          "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                          "folderPath": "/Resolutions/@{body('ParseGeneratedDocSetPayload')?['d']?['Name']}",
+                                          "name": "@items('ForEach_to_add_all_attachments_to_Resolution_DS')['Name']",
+                                          "body": "@items('ForEach_to_add_all_attachments_to_Resolution_DS')['ContentBytes']"
+                                        },
+                                        "host": {
+                                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                          "connectionName": "shared_sharepointonline_2",
+                                          "operationId": "CreateFile"
+                                        },
+                                        "authentication": "@parameters('$authentication')"
+                                      },
+                                      "runtimeConfiguration": {
+                                        "contentTransfer": {
+                                          "transferMode": "Chunked"
+                                        }
+                                      }
+                                    },
+                                    "HTTP_request_for_MMS_mail_for_every_resolution": {
+                                      "runAfter": {
+                                        "Append_to_array_variable_2": [
+                                          "Succeeded"
+                                        ]
+                                      },
+                                      "metadata": {
+                                        "operationMetadataId": "858c8078-fcc6-4bf0-8f2c-b9cd8a75c5f8"
+                                      },
+                                      "type": "Http",
+                                      "inputs": {
+                                        "uri": "https://prod-106.westeurope.logic.azure.com:443/workflows/f94a34d7e7b04a6dab8c6e519e1144ab/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=CYzcZDI8645Ny4OU5_dpb8JIR3-G4rb9HheZ3hd9Vyk",
+                                        "method": "POST",
+                                        "headers": {
+                                          "DraftResolution": "@variables('DraftResolution')",
+                                          "OriginalResolution": "@variables('OldDraftResolution')",
+                                          "ResolutionTitle": "@variables('ResolutionTitle')",
+                                          "ResID": "@{body('ParseGeneratedDocSetPayload')?['d']?['Id']}",
+                                          "Action": "MMS",
+                                          "FilterEmailOccurence": "Multiple",
+                                          "FilterWFScenario": "BE_WrittenAmendment"
+                                        },
+                                        "body": {
+                                          "Amendments": "",
+                                          "Attachments": "@variables('MMSAttachment')"
+                                        }
+                                      }
+                                    },
+                                    "Append_to_array_variable_2": {
+                                      "runAfter": {
+                                        "Set_variable_2": [
+                                          "Succeeded"
+                                        ]
+                                      },
+                                      "metadata": {
+                                        "operationMetadataId": "07f1b2d1-8084-4fec-abc3-be5b78c9173b"
+                                      },
+                                      "type": "AppendToArrayVariable",
+                                      "inputs": {
+                                        "name": "MMSAttachment",
+                                        "value": {
+                                          "Name": "@{items('ForEach_to_add_all_attachments_to_Resolution_DS')['Name']}",
+                                          "content": {
+                                            "$content-type": "@{items('ForEach_to_add_all_attachments_to_Resolution_DS')?['ContentBytes']?['$content-type']}",
+                                            "$content": "@items('ForEach_to_add_all_attachments_to_Resolution_DS')?['ContentBytes']?['$content']"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "Set_variable_2": {
+                                      "runAfter": {
+                                        "Update_file_properties": [
+                                          "Succeeded"
+                                        ]
+                                      },
+                                      "metadata": {
+                                        "operationMetadataId": "9ce0fb1b-bfdc-409c-89bc-e3ba4051f021"
+                                      },
+                                      "type": "SetVariable",
+                                      "inputs": {
+                                        "name": "ProcessDraftRes",
+                                        "value": "@{items('ForEach_to_add_all_attachments_to_Resolution_DS')?['ContentBytes']?['$content-type']}"
+                                      }
+                                    },
+                                    "Update_file_properties": {
+                                      "runAfter": {
+                                        "Create_file": [
+                                          "Succeeded"
+                                        ]
+                                      },
+                                      "metadata": {
+                                        "operationMetadataId": "6d664bfd-d41f-4b43-87e0-6f868f87ac86"
+                                      },
+                                      "type": "OpenApiConnection",
+                                      "inputs": {
+                                        "parameters": {
+                                          "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                          "table": "36187dda-6c0a-4e0f-9fb4-606489d0357c",
+                                          "id": "@outputs('Create_file')?['body/ItemId']",
+                                          "item/Title": "@outputs('Create_file')?['body/Name']",
+                                          "item/ResolutionChanges/Value": "-",
+                                          "item/TypeofFile/Value": "Received by Flow"
+                                        },
+                                        "host": {
+                                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                          "connectionName": "shared_sharepointonline_2",
+                                          "operationId": "PatchFileItem"
+                                        },
+                                        "authentication": "@parameters('$authentication')"
+                                      }
+                                    }
+                                  },
+                                  "else": {
+                                    "actions": {}
+                                  },
+                                  "expression": {
+                                    "equals": [
+                                      "@replace(replace(replace(replace(replace(replace(replace(replace(items('ForEach_to_add_all_attachments_to_Resolution_DS')['Name'],'.docx',''),'.xlsx',''),'.pptx',''),'.pdf',''),'.doc',''),'.xls',''),'.ppt',''),'.rtf','')",
+                                      "@concat(trim(variables('IncomingResolutionName')),' as received')"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "22b46df8-90fe-4b89-bbae-f4e1ab390744"
+                                  },
+                                  "type": "If"
+                                }
+                              },
+                              "runAfter": {
+                                "Set_variable": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "3f8d0291-3e67-4778-bcaa-77555a798947"
+                              },
+                              "type": "Foreach"
+                            },
+                            "Set_ResId": {
+                              "runAfter": {
+                                "ForEach_to_add_all_attachments_to_Resolution_DS": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "ec4d77b4-5e8b-4836-a491-d14a1b4ed355"
+                              },
+                              "type": "SetVariable",
+                              "inputs": {
+                                "name": "ResId",
+                                "value": "@{body('ParseGeneratedDocSetPayload')?['d']?['Id']}"
+                              }
+                            },
+                            "Http_Update_DocSet": {
+                              "runAfter": {
+                                "Set_ResId": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "2c88f158-dc40-45bd-a145-57c65a7c4543"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                  "parameters/method": "POST",
+                                  "parameters/uri": "_api/web/lists/getbytitle('Resolutions')/items(@{body('ParseGeneratedDocSetPayload')?['d']?['Id']})",
+                                  "parameters/headers": {
+                                    "Content-Type": "application/json;odata=verbose",
+                                    "Accept": "application/json;odata=verbose",
+                                    "X-HTTP-METHOD": "MERGE",
+                                    "If-Match": "*"
+                                  },
+                                  "parameters/body": " {\n        \"__metadata\":{\n        \"type\":\"SP.Data.ResolutionsItem\" \n     },\n        \"Session\":\"@{variables('Session')}\", \"DraftResolution\":\"@{variables('DraftResolution')}\",\"ResolutionTitle\":\"@{variables('ResolutionTitle')}\",\n\"ResolutionStatus\":\"Draft\",\"SessionYear\":\"@{variables('SessionYear')}\",\"SessionMonth\":\"@{variables('SessionMonth')}\",\"ShortTitle\":\"@{variables('ResolutionTitle')}\",\"DSID\":\"@{body('ParseGeneratedDocSetPayload')?['d']?['Id']}\",\"InterGovernmentalBody\":\"Human Rights Council\"}"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "connectionName": "shared_sharepointonline_2",
+                                  "operationId": "HttpRequest"
+                                },
+                                "authentication": "@parameters('$authentication')"
+                              }
+                            },
+                            "Append_to_string_variable_Amendments": {
+                              "runAfter": {
+                                "Scope_Resolutions_with_no_attachments_found": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "2b0aec47-2e04-4a3b-9af3-c421bd949147"
+                              },
+                              "type": "AppendToStringVariable",
+                              "inputs": {
+                                "name": "Amendments",
+                                "value": "@{variables('DraftResolution')}: <a href=\"https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV/SitePages/Resolution.aspx?_source=https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV/SitePages/Mandate-Dashboard.aspx&ResolutionID=@{variables('ResId')}&FormMode=Edit\">Click here</a><br>"
+                              }
+                            },
+                            "Set_variable_IsResolutionConfirmed": {
+                              "runAfter": {
+                                "Append_to_string_variable_General_Amendments": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "f47279e4-936e-4aa5-9989-8a73f78d2f3d"
+                              },
+                              "type": "SetVariable",
+                              "inputs": {
+                                "name": "IsResolutionConfirmed",
+                                "value": true
+                              }
+                            },
+                            "Scope_Resolutions_with_no_attachments_found": {
+                              "actions": {
+                                "Filter_array": {
+                                  "metadata": {
+                                    "operationMetadataId": "1d356cd7-3dd6-4b35-8f50-616cbf48f9e8"
+                                  },
+                                  "type": "Query",
+                                  "inputs": {
+                                    "from": "@triggerOutputs()?['body/attachments']",
+                                    "where": "@equals(replace(replace(replace(replace(replace(replace(replace(item()?['name'], '.docx', ''), '.xlsx', ''), '.pptx', ''), '.pdf', ''), '.doc', ''), '.xls', ''), '.ppt', ''), concat(trim(variables('IncomingResolutionName')), ' as received'))"
+                                  }
+                                },
+                                "Condition_2": {
+                                  "actions": {
+                                    "HTTP_request_for_MMS_mail_for_every_resolution_2": {
+                                      "metadata": {
+                                        "operationMetadataId": "27a7d5e6-ddf8-46ef-8461-ac7b27751f2b"
+                                      },
+                                      "type": "Http",
+                                      "inputs": {
+                                        "uri": "https://prod-11.westeurope.logic.azure.com:443/workflows/b26ee16b53ec47ada5ed64e6710b6ba6/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=RRcr3Xs7Hq0-F2iDC38RAOgOw7VrmNRZeakAymY_-1M",
+                                        "method": "POST",
+                                        "headers": {
+                                          "DraftResolution": "@variables('DraftResolution')",
+                                          "OriginalResolution": "@variables('OldDraftResolution')",
+                                          "ResolutionTitle": "@variables('ResolutionTitle')",
+                                          "ResID": "@{body('ParseGeneratedDocSetPayload')?['d']?['Id']}",
+                                          "Action": "MMS",
+                                          "FilterEmailOccurence": "Multiple",
+                                          "FilterWFScenario": "BE_WrittenAmendment"
+                                        },
+                                        "body": {
+                                          "Amendments": "",
+                                          "Attachments": "@variables('MMSAttachment')"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "runAfter": {
+                                    "Filter_array": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "else": {
+                                    "actions": {}
+                                  },
+                                  "expression": {
+                                    "and": [
+                                      {
+                                        "equals": [
+                                          "@length(body('Filter_array'))",
+                                          0
+                                        ]
+                                      },
+                                      {
+                                        "greater": [
+                                          "@int(variables('ResId'))",
+                                          0
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "d4d04b07-84dd-4cc8-8a38-910cbc570d47"
+                                  },
+                                  "type": "If"
+                                }
+                              },
+                              "runAfter": {
+                                "Http_Update_DocSet": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "a4fe93a7-f9bf-4303-940b-8a2eb8848586"
+                              },
+                              "type": "Scope"
+                            },
+                            "Set_variable": {
+                              "runAfter": {
+                                "ParseGeneratedDocSetPayload": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "404f9eb6-1feb-4dda-9a85-ed9c1528afc1"
+                              },
+                              "type": "SetVariable",
+                              "inputs": {
+                                "name": "MMSAttachment",
+                                "value": "@variables('EmptyArray')"
+                              }
+                            },
+                            "Append_to_string_variable_General_Amendments": {
+                              "runAfter": {
+                                "Append_to_string_variable_Amendments": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "09c1b096-3dcb-4c7e-90bd-da19ad0a4680"
+                              },
+                              "type": "AppendToStringVariable",
+                              "inputs": {
+                                "name": "GeneralAmendments",
+                                "value": "@{variables('DraftResolution')}: <a href=\"https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV/SitePages/Mandate-Dashboard.aspx?rid=@{variables('ResId')}\">Click here</a><br>"
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "Set_variable_Check_ResId": [
+                              "Succeeded"
+                            ]
+                          },
+                          "else": {
+                            "actions": {
+                              "Set_variable_4": {
+                                "metadata": {
+                                  "operationMetadataId": "bdccddf2-4798-4929-bb86-1df0acb64ba3"
+                                },
+                                "type": "SetVariable",
+                                "inputs": {
+                                  "name": "Action2",
+                                  "value": "Resolution Exists"
+                                }
+                              }
+                            }
+                          },
+                          "expression": {
+                            "equals": [
+                              "@variables('CheckResID')",
+                              "NotExists"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "93a2f79b-653d-45c5-a088-89d0a4584962"
+                          },
+                          "type": "If"
+                        },
+                        "Set_variable_OldDraftResolution": {
+                          "metadata": {
+                            "operationMetadataId": "7c45566a-7a0e-4a50-9f77-a53d50cdcbbb"
+                          },
+                          "type": "SetVariable",
+                          "inputs": {
+                            "name": "OldDraftResolution",
+                            "value": "@{trim(split(split(split(triggerOutputs()?['body/subject'],':')[1],'|')[3],'to')[1])}"
+                          }
+                        },
+                        "HTTP_request_to_Get_Draft_Resolution_ID_for_validation": {
+                          "runAfter": {
+                            "Set_variable_OldDraftResolution": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "1f49bf05-f743-449e-b4b1-936195d48457"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                              "parameters/method": "GET",
+                              "parameters/uri": "/_api/web/lists/getbytitle('Resolutions')/items?$select=Id,DraftResolution&$filter=DraftResolution eq '@{variables('DraftResolution')}'",
+                              "parameters/headers": {
+                                "Content-Type": "application/json;odata=nometadata",
+                                "Accept": "application/json;odata=nometadata"
+                              }
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "connectionName": "shared_sharepointonline_2",
+                              "operationId": "HttpRequest"
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        },
+                        "Apply_to_each": {
+                          "foreach": "@variables('VarAttachApprove')",
+                          "actions": {
+                            "Condition_7": {
+                              "actions": {
+                                "HTTP_1": {
+                                  "metadata": {
+                                    "operationMetadataId": "49cb14c6-5a05-4a8c-8115-6a2d75e004e3"
+                                  },
+                                  "type": "Http",
+                                  "inputs": {
+                                    "uri": "https://mrms-oral-statement-stg.azurewebsites.net/api/parser?code=REDACTED_AZURE_FUNCTION_KEY",
+                                    "method": "POST",
+                                    "body": {
+                                      "bytes": "@items('Apply_to_each')?['content']?['$content']"
+                                    }
+                                  }
+                                },
+                                "Compose_4": {
+                                  "runAfter": {
+                                    "HTTP_1": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "53c6c2db-a907-4de9-9e67-94a7d7753e98"
+                                  },
+                                  "type": "Compose",
+                                  "inputs": "@body('HTTP_1')"
+                                },
+                                "Compose_9": {
+                                  "runAfter": {
+                                    "Compose_4": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "e63aaca1-69b5-45a3-9549-2c5d904632ef"
+                                  },
+                                  "type": "Compose",
+                                  "inputs": "@body('HTTP_1')"
+                                },
+                                "Parse_JSON_5": {
+                                  "runAfter": {
+                                    "Compose_9": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "7acaabe4-241c-46d4-960a-b254adacf6e1"
+                                  },
+                                  "type": "ParseJson",
+                                  "inputs": {
+                                    "content": "@outputs('Compose_9')",
+                                    "schema": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "original": {
+                                            "type": "string"
+                                          },
+                                          "past_tense": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "original",
+                                          "transformed"
+                                        ]
+                                      }
+                                    }
+                                  }
+                                },
+                                "Compose_11": {
+                                  "runAfter": {
+                                    "Parse_JSON_5": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "6f58f1ea-12f4-4834-9e3f-b9753b44ba2a"
+                                  },
+                                  "type": "Compose",
+                                  "inputs": "@body('Parse_JSON_5')"
+                                },
+                                "Select": {
+                                  "runAfter": {
+                                    "Compose_11": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "91db3323-37cf-49a3-b400-ddfb674d2cf8"
+                                  },
+                                  "type": "Select",
+                                  "inputs": {
+                                    "from": "@body('Parse_JSON_5')",
+                                    "select": {
+                                      "original": "@item()?['original']",
+                                      "transformed": "@item()?['transformed']",
+                                      "num": "@\r\nif(\r\n  and(\r\n    greater(length(first(split(string(coalesce(item()?['original'],' ')), '.'))), 0),\r\n    equals(\r\n      length(\r\n        trim(\r\n          replace(\r\n            replace(\r\n            replace(\r\n            replace(\r\n            replace(\r\n            replace(\r\n            replace(\r\n            replace(\r\n            replace(\r\n            replace(first(split(string(coalesce(item()?['original'],' ')), '.')), '0',''),\r\n            '1',''),\r\n            '2',''),\r\n            '3',''),\r\n            '4',''),\r\n            '5',''),\r\n            '6',''),\r\n            '7',''),\r\n            '8',''),\r\n            '9','')\r\n        )\r\n      ),\r\n      0\r\n    )\r\n  ),\r\n  int(first(split(string(coalesce(item()?['original'],' ')), '.'))),\r\n  -1\r\n)\r\n"
+                                    }
+                                  }
+                                },
+                                "Compose_10": {
+                                  "runAfter": {
+                                    "Select": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "3ed16b10-d7a1-4c97-8fad-307afdb3d1bc"
+                                  },
+                                  "type": "Compose",
+                                  "inputs": "@reverse(sort(body('Select'),'num'))"
+                                },
+                                "Select_2": {
+                                  "runAfter": {
+                                    "Compose_10": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "9b9edf6c-2151-422e-a862-73a6e9518837"
+                                  },
+                                  "type": "Select",
+                                  "inputs": {
+                                    "from": "@outputs('Compose_10')",
+                                    "select": {
+                                      "original": "@item()?['original']",
+                                      "transformed": "@item()?['transformed']"
+                                    }
+                                  }
+                                },
+                                "Apply_to_each_13": {
+                                  "foreach": "@body('Select_2')",
+                                  "actions": {
+                                    "Condition_11": {
+                                      "actions": {
+                                        "Res_ID": {
+                                          "runAfter": {
+                                            "Condition_15": [
+                                              "Succeeded"
+                                            ]
+                                          },
+                                          "metadata": {
+                                            "operationMetadataId": "bd8af0e9-3122-4054-8b6a-0e4b556c21c7"
+                                          },
+                                          "type": "Compose",
+                                          "inputs": "@variables('ResId')"
+                                        },
+                                        "Original": {
+                                          "metadata": {
+                                            "operationMetadataId": "5509901e-7aac-4c85-aa17-7b2ca22c7d04"
+                                          },
+                                          "type": "Compose",
+                                          "inputs": "@item()?['original']"
+                                        },
+                                        "transformed": {
+                                          "runAfter": {
+                                            "Original": [
+                                              "Succeeded"
+                                            ]
+                                          },
+                                          "metadata": {
+                                            "operationMetadataId": "f2fbbfa9-e5dc-4d6d-9a12-0f29f04ae1da"
+                                          },
+                                          "type": "Compose",
+                                          "inputs": "@item()?['transformed']"
+                                        },
+                                        "Condition_14": {
+                                          "actions": {
+                                            "Set_variable_-_OPNo": {
+                                              "metadata": {
+                                                "operationMetadataId": "d46ec9e8-45bd-482a-b649-2b403a185abd"
+                                              },
+                                              "type": "SetVariable",
+                                              "inputs": {
+                                                "name": "OPNo",
+                                                "value": "@{trim(first(split(outputs('Original'), '.')))}"
+                                              }
+                                            },
+                                            "Set_variable_-_OPText": {
+                                              "runAfter": {
+                                                "Set_variable_-_OPNo": [
+                                                  "Succeeded"
+                                                ]
+                                              },
+                                              "metadata": {
+                                                "operationMetadataId": "06fb25da-a828-48a5-9f3c-76e824446e2b"
+                                              },
+                                              "type": "SetVariable",
+                                              "inputs": {
+                                                "name": "OPText",
+                                                "value": "@{trim(join(skip(split(outputs('Original'), '.'), 1), '.'))}"
+                                              }
+                                            }
+                                          },
+                                          "runAfter": {
+                                            "transformed": [
+                                              "Succeeded"
+                                            ]
+                                          },
+                                          "else": {
+                                            "actions": {
+                                              "Set_variable_12": {
+                                                "metadata": {
+                                                  "operationMetadataId": "0f3d510e-df11-4a9d-86e9-cd98a24d4291"
+                                                },
+                                                "type": "SetVariable",
+                                                "inputs": {
+                                                  "name": "OPText",
+                                                  "value": "@{trim(outputs('Original'))}"
+                                                }
+                                              },
+                                              "Set_variable_26": {
+                                                "runAfter": {
+                                                  "Set_variable_12": [
+                                                    "Succeeded"
+                                                  ]
+                                                },
+                                                "metadata": {
+                                                  "operationMetadataId": "f171bd42-c5e2-4c3a-9582-ef185107a39e"
+                                                },
+                                                "type": "SetVariable",
+                                                "inputs": {
+                                                  "name": "OPNo",
+                                                  "value": " "
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "and": [
+                                              {
+                                                "contains": [
+                                                  "@outputs('Original')",
+                                                  "."
+                                                ]
+                                              }
+                                            ]
+                                          },
+                                          "metadata": {
+                                            "operationMetadataId": "d9627964-8fd1-4619-9437-b367bd5ff362"
+                                          },
+                                          "type": "If"
+                                        },
+                                        "Condition_15": {
+                                          "actions": {
+                                            "Set_variable_Transformed": {
+                                              "metadata": {
+                                                "operationMetadataId": "4e932466-92fd-496d-b6aa-5d5174532f8a"
+                                              },
+                                              "type": "SetVariable",
+                                              "inputs": {
+                                                "name": "Transformed",
+                                                "value": "@{trim(join(skip(split(outputs('Transformed'), '.'), 1), '.'))}"
+                                              }
+                                            }
+                                          },
+                                          "runAfter": {
+                                            "Condition_14": [
+                                              "Succeeded"
+                                            ]
+                                          },
+                                          "else": {
+                                            "actions": {
+                                              "Set_variable_14": {
+                                                "metadata": {
+                                                  "operationMetadataId": "69218fdf-325b-4ade-86e8-61731ac1fd53"
+                                                },
+                                                "type": "SetVariable",
+                                                "inputs": {
+                                                  "name": "Transformed",
+                                                  "value": "@{trim(outputs('Transformed'))}"
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "and": [
+                                              {
+                                                "contains": [
+                                                  "@outputs('transformed')",
+                                                  "."
+                                                ]
+                                              }
+                                            ]
+                                          },
+                                          "metadata": {
+                                            "operationMetadataId": "38e43f76-5685-4bae-9bbc-fdf3ded88667"
+                                          },
+                                          "type": "If"
+                                        },
+                                        "Create_item": {
+                                          "runAfter": {
+                                            "Res_ID": [
+                                              "Succeeded"
+                                            ]
+                                          },
+                                          "metadata": {
+                                            "operationMetadataId": "0d0a7a53-3b09-418b-92be-5a8b7339de4c"
+                                          },
+                                          "type": "OpenApiConnection",
+                                          "inputs": {
+                                            "parameters": {
+                                              "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                              "table": "370c2d94-e0d2-47a8-ab20-23528a924d03",
+                                              "item/ResolutionID": "@outputs('Res_ID')",
+                                              "item/OP_AsReceived": "@variables('OPNo')",
+                                              "item/OPText_AsReceived": "@variables('OPText')",
+                                              "item/AsReceived_Type": "As Rec.",
+                                              "item/OPText_Converted": "@variables('Transformed')"
+                                            },
+                                            "host": {
+                                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                              "connectionName": "shared_sharepointonline",
+                                              "operationId": "PostItem"
+                                            },
+                                            "authentication": "@parameters('$authentication')"
+                                          }
+                                        }
+                                      },
+                                      "else": {
+                                        "actions": {}
+                                      },
+                                      "expression": {
+                                        "and": [
+                                          {
+                                            "not": {
+                                              "equals": [
+                                                "@item()",
+                                                "@null"
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      },
+                                      "metadata": {
+                                        "operationMetadataId": "42bd34ec-5bcb-4176-918f-be746e11e2a6"
+                                      },
+                                      "type": "If"
+                                    }
+                                  },
+                                  "runAfter": {
+                                    "Select_2": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "13fe6447-46cc-4da8-8536-7c972ffdece7"
+                                  },
+                                  "type": "Foreach"
+                                }
+                              },
+                              "else": {
+                                "actions": {}
+                              },
+                              "expression": {
+                                "and": [
+                                  {
+                                    "equals": [
+                                      "@concat(trim(variables('IncomingResolutionName')),' as received')",
+                                      "@replace(replace(replace(replace(replace(replace(replace(replace(items('Apply_to_each')['Name'],'.docx',''),'.xlsx',''),'.pptx',''),'.pdf',''),'.doc',''),'.xls',''),'.ppt',''),'.rtf','')"
+                                    ]
+                                  }
+                                ]
+                              },
+                              "type": "If"
+                            }
+                          },
+                          "runAfter": {
+                            "Condition_to_check_if_resolution_not_exists": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "Foreach"
+                        }
+                      }
+                    },
+                    "Case_WITHDRAWAL": {
+                      "case": "BE WITHDRAWAL",
+                      "actions": {
+                        "Send_an_HTTP_request_for_withdrawal": {
+                          "metadata": {
+                            "operationMetadataId": "0dd6e95b-226e-4b5a-8da2-8e5cee5d58f3"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                              "parameters/method": "GET",
+                              "parameters/uri": "/_api/web/lists/getbytitle('Resolutions')/items?$select=Id,DraftResolution&$filter=DraftResolution eq '@{variables('DraftResolution')}'",
+                              "parameters/headers": {
+                                "Content-Type": "application/json;odata=nometadata",
+                                "Accept": "application/json;odata=nometadata"
+                              }
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "connectionName": "shared_sharepointonline_2",
+                              "operationId": "HttpRequest"
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        },
+                        "Draft_Resolution_ID_withdrawal": {
+                          "runAfter": {
+                            "Send_an_HTTP_request_for_withdrawal": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "357bf14d-225b-4d33-a808-0b2db594c8b8"
+                          },
+                          "type": "ParseJson",
+                          "inputs": {
+                            "content": "@body('Send_an_HTTP_request_for_withdrawal')",
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Id": {
+                                        "type": "integer"
+                                      },
+                                      "ID": {
+                                        "type": "integer"
+                                      },
+                                      "DraftResolution": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "Id",
+                                      "DraftResolution",
+                                      "ID"
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "Condition_to_check_if_resolution_exists": {
+                          "actions": {
+                            "Set_ResId_withdrawal": {
+                              "metadata": {
+                                "operationMetadataId": "d1970814-0efa-4ca7-9c0b-b407beac2466"
+                              },
+                              "type": "SetVariable",
+                              "inputs": {
+                                "name": "ResId",
+                                "value": "@{first(body('Draft_Resolution_ID_withdrawal')?['value'])['Id']}"
+                              }
+                            },
+                            "Update_Resolution_Status": {
+                              "runAfter": {
+                                "Set_ResId_withdrawal": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "0f37d8ac-7b9c-4de6-89a7-12bfb1625df3"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                  "parameters/method": "POST",
+                                  "parameters/uri": "_api/web/lists/getbytitle('Resolutions')/items(@{variables('ResId')})",
+                                  "parameters/headers": {
+                                    "Content-Type": "application/json;odata=verbose",
+                                    "Accept": "application/json;odata=verbose",
+                                    "X-HTTP-METHOD": "MERGE",
+                                    "If-Match": "*"
+                                  },
+                                  "parameters/body": "{\n     \"__metadata\":{\n        \"type\":\"SP.Data.ResolutionsItem\" \n     },\n     \"ResolutionStatus\":\"Withdrawn by sponsor(s)\"\n}"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "connectionName": "shared_sharepointonline_2",
+                                  "operationId": "HttpRequest"
+                                },
+                                "authentication": "@parameters('$authentication')"
+                              }
+                            },
+                            "Get_Status_details": {
+                              "runAfter": {
+                                "Update_Resolution_Status": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "991bc9f0-7a48-4f61-842a-ae01c8a28537"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                  "parameters/method": "GET",
+                                  "parameters/uri": "/_api/web/lists/getbytitle('Status')/items?$select=Id,ResolutionID&$filter=ResolutionID eq '@{variables('ResId')}'",
+                                  "parameters/headers": {
+                                    "Content-Type": "application/json;odata=nometadata",
+                                    "Accept": "application/json;odata=nometadata"
+                                  }
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "connectionName": "shared_sharepointonline_2",
+                                  "operationId": "HttpRequest"
+                                },
+                                "authentication": "@parameters('$authentication')"
+                              }
+                            },
+                            "Parse_JSON_StatusList": {
+                              "runAfter": {
+                                "Get_Status_details": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "37f1400a-b19e-494c-af34-eac54a0be09b"
+                              },
+                              "type": "ParseJson",
+                              "inputs": {
+                                "content": "@body('Get_Status_details')",
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "Id": {
+                                            "type": "integer"
+                                          },
+                                          "ID": {
+                                            "type": "integer"
+                                          },
+                                          "ResolutionID": {
+                                            "type": "integer"
+                                          }
+                                        },
+                                        "required": [
+                                          "Id",
+                                          "ResolutionID",
+                                          "ID"
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "Condition_to_check_if_item_exists_in_status_list": {
+                              "actions": {
+                                "Apply_to_each_8": {
+                                  "foreach": "@variables('StatusID')",
+                                  "actions": {
+                                    "HTTP_request_to_delete_from_Status_List": {
+                                      "metadata": {
+                                        "operationMetadataId": "f2c7b42b-2dca-47cc-9b13-e2a166343390"
+                                      },
+                                      "type": "OpenApiConnection",
+                                      "inputs": {
+                                        "parameters": {
+                                          "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                          "parameters/method": "DELETE",
+                                          "parameters/uri": "_api/web/lists/GetByTitle('Status')/items(@{items('Apply_to_each_8')['StatusId']})",
+                                          "parameters/headers": {
+                                            "Content-Type": "application/json;odata=nometadata",
+                                            "IF-MATCH": "*",
+                                            "X-HTTP-METHOD": "DELETE"
+                                          }
+                                        },
+                                        "host": {
+                                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                          "connectionName": "shared_sharepointonline_2",
+                                          "operationId": "HttpRequest"
+                                        },
+                                        "authentication": "@parameters('$authentication')"
+                                      }
+                                    }
+                                  },
+                                  "runAfter": {
+                                    "Apply_to_each_7": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "993869ca-9e41-4ce2-ad6b-c308a33df886"
+                                  },
+                                  "type": "Foreach"
+                                },
+                                "Set_Empty_Array": {
+                                  "metadata": {
+                                    "operationMetadataId": "bf314edc-3d03-4958-bcc2-0f07b97206cb"
+                                  },
+                                  "type": "SetVariable",
+                                  "inputs": {
+                                    "name": "StatusID",
+                                    "value": "@variables('EmptyArray')"
+                                  }
+                                },
+                                "Apply_to_each_7": {
+                                  "foreach": "@body('Parse_JSON_StatusList')?['value']",
+                                  "actions": {
+                                    "Append_to_array_variable": {
+                                      "metadata": {
+                                        "operationMetadataId": "a77bfa6b-c29c-4033-8780-888f06569aae"
+                                      },
+                                      "type": "AppendToArrayVariable",
+                                      "inputs": {
+                                        "name": "StatusID",
+                                        "value": {
+                                          "StatusId": "@{items('Apply_to_each_7')?['Id']}"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "runAfter": {
+                                    "Set_Empty_Array": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "660ad0e6-6a24-4ca6-81c7-b18061a3b781"
+                                  },
+                                  "type": "Foreach"
+                                }
+                              },
+                              "runAfter": {
+                                "Parse_JSON_StatusList": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "else": {
+                                "actions": {}
+                              },
+                              "expression": {
+                                "greater": [
+                                  "@length(outputs('Parse_JSON_StatusList')?['body/value'])",
+                                  0
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "3b3b756d-005a-41ab-8981-5bab5cba14c8"
+                              },
+                              "type": "If"
+                            },
+                            "Append_to_string_variable_2": {
+                              "runAfter": {
+                                "Condition_to_check_if_item_exists_in_status_list": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "52f00561-fd24-4061-b907-e13982160fe1"
+                              },
+                              "type": "AppendToStringVariable",
+                              "inputs": {
+                                "name": "Amendments",
+                                "value": "@{variables('IncomingResolutionName')}<br>"
+                              }
+                            },
+                            "Set_variable_IsResolutionConfirmed_Withdrawal": {
+                              "runAfter": {
+                                "Append_to_string_variable_short_end_resolutions_multiline": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "ed67df43-82d0-4709-8e0c-8593dbc619a0"
+                              },
+                              "type": "SetVariable",
+                              "inputs": {
+                                "name": "IsResolutionConfirmed",
+                                "value": true
+                              }
+                            },
+                            "Append_to_string_variable_short_end_resolutions_singleline": {
+                              "runAfter": {
+                                "Append_to_string_variable_2": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "35abf940-619a-4830-a87d-d4c063abf20a"
+                              },
+                              "type": "AppendToStringVariable",
+                              "inputs": {
+                                "name": "shortresolutions",
+                                "value": "@concat(' ',variables('IncomingResolutionName'),',')"
+                              }
+                            },
+                            "Append_to_string_variable_short_end_resolutions_multiline": {
+                              "runAfter": {
+                                "Append_to_string_variable_short_end_resolutions_singleline": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "f63dc060-10df-4629-89bb-fc782373bc91"
+                              },
+                              "type": "AppendToStringVariable",
+                              "inputs": {
+                                "name": "shortresolutionsmultiline",
+                                "value": "@{variables('IsResolutionConfirmed')}<br>"
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "Draft_Resolution_ID_withdrawal": [
+                              "Succeeded"
+                            ]
+                          },
+                          "else": {
+                            "actions": {}
+                          },
+                          "expression": {
+                            "greater": [
+                              "@length(outputs('Draft_Resolution_ID_withdrawal')?['body/value'])",
+                              0
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "468feabb-676c-4557-a67b-dec41b702109"
+                          },
+                          "type": "If"
+                        }
+                      }
+                    }
+                  },
+                  "default": {
+                    "actions": {}
+                  },
+                  "expression": "@variables('Action')",
+                  "metadata": {
+                    "operationMetadataId": "4f3ab8bd-0391-4ead-8c4a-8d26a5326517"
+                  },
+                  "type": "Switch"
+                }
+              },
+              "runAfter": {
+                "Set_variable_ResolutionName": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {}
+              },
+              "expression": {
+                "greater": [
+                  "@length(variables('IncomingResolutionName'))",
+                  0
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "5bc347e4-868a-4656-b451-b7eb734bb1b8"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "Check_if_subject_line_is_valid": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "b56f9fda-9dda-4ea8-8994-2fb89a7c2d8a"
+          },
+          "type": "Foreach"
+        },
+        "Initialize_email_amendment_variable": {
+          "runAfter": {
+            "Initialize_MMS_attachment_array_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "8f1378f7-8944-48e4-91da-ae6541d3e330"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Amendments",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_MMS_attachment_array_variable": {
+          "runAfter": {
+            "Initialize_variable_ResolutionName": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "af60b520-63d9-4861-91cb-151227b2fd64"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "MMSAttachment",
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "Send_One_time_Emails": {
+          "actions": {
+            "Switch_action_for_emails": {
+              "cases": {
+                "Case_Written_Amendment": {
+                  "case": "BE AMENDMENT",
+                  "actions": {
+                    "HTTP_request_for_OHCHR_and_Generic_mail": {
+                      "metadata": {
+                        "operationMetadataId": "f43c0dda-eab4-4165-91af-a91af7442796"
+                      },
+                      "type": "Http",
+                      "inputs": {
+                        "uri": "https://prod-106.westeurope.logic.azure.com:443/workflows/f94a34d7e7b04a6dab8c6e519e1144ab/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=CYzcZDI8645Ny4OU5_dpb8JIR3-G4rb9HheZ3hd9Vyk",
+                        "method": "POST",
+                        "headers": {
+                          "OriginalResolution": "@variables('OldDraftResolution')",
+                          "ResolutionTitle": "@variables('ResolutionTitle')",
+                          "Action": "OHCHRandGeneric",
+                          "FilterEmailOccurence": "Single",
+                          "FilterWFScenario": "BE_WrittenAmendment"
+                        },
+                        "body": {
+                          "Amendments": "@variables('Amendments')",
+                          "GeneralAmendments": "@variables('GeneralAmendments')",
+                          "Attachments": "@variables('varAttach')"
+                        }
+                      }
+                    }
+                  }
+                },
+                "Case_Withdrawal": {
+                  "case": "BE WITHDRAWAL",
+                  "actions": {
+                    "HTTP": {
+                      "metadata": {
+                        "operationMetadataId": "4ac34bdc-a4ba-45b9-b308-490587a68b1b"
+                      },
+                      "type": "Http",
+                      "inputs": {
+                        "uri": "https://prod-106.westeurope.logic.azure.com:443/workflows/f94a34d7e7b04a6dab8c6e519e1144ab/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=CYzcZDI8645Ny4OU5_dpb8JIR3-G4rb9HheZ3hd9Vyk",
+                        "method": "POST",
+                        "headers": {
+                          "Action": "General",
+                          "FilterEmailOccurence": "Single",
+                          "FilterWFScenario": "BE_Withdrawal",
+                          "ShortResolutionSline": "@variables('shortresolutions')",
+                          "SessionSymbol": "@{trim(split(split(triggerOutputs()?['body/subject'],':')[1],'|')[1])}",
+                          "ShortResolutionMline": "@variables('shortresolutionsmultiline')"
+                        },
+                        "body": {
+                          "Amendments": "@variables('Amendments')",
+                          "Attachments": "@variables('varAttach')"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "default": {
+                "actions": {}
+              },
+              "expression": "@variables('Action')",
+              "metadata": {
+                "operationMetadataId": "67e95b72-1a21-4d11-80de-956e923af8e1"
+              },
+              "type": "Switch"
+            }
+          },
+          "runAfter": {
+            "Loop_all_resolutions": [
+              "Succeeded"
+            ]
+          },
+          "else": {
+            "actions": {}
+          },
+          "expression": {
+            "equals": [
+              "@variables('IsResolutionConfirmed')",
+              true
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "925d6168-3f50-4db6-afc9-7be305afc362"
+          },
+          "type": "If"
+        },
+        "Initialize_variable_IsResolutionConfirmed": {
+          "runAfter": {
+            "Initialize_email_general_amendment_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "ddc78b32-52b4-49b8-a759-b4563dcbd51b"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "IsResolutionConfirmed",
+                "type": "boolean",
+                "value": false
+              }
+            ]
+          }
+        },
+        "Initialize_variable_short_end_resolutions_singleline": {
+          "runAfter": {
+            "Initialize_variable_Group-DCM-IS": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "6ab1d77b-6ab6-48ea-9fa7-6d077c8746ef"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "shortresolutions",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_short_end_resolutions_multiline": {
+          "runAfter": {
+            "Initialize_variable_short_end_resolutions_singleline": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "7d7075f5-c608-4353-93f9-821d1f8c15dc"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "shortresolutionsmultiline",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_email_general_amendment_variable": {
+          "runAfter": {
+            "Initialize_email_amendment_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "ce177e40-da12-4766-8fca-60df5bd4fa20"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "GeneralAmendments",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_SessionYear": {
+          "runAfter": {
+            "Var_Action": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "4c489ebe-406e-49e1-b908-e426206689c4"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "SessionYear",
+                "type": "string",
+                "value": "@{formatDateTime(utcNow(),'yyyy')}"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_SessionMonth": {
+          "runAfter": {
+            "Initialize_variable_SessionYear": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "0746c874-2d35-4f67-bac9-92040d655bd5"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "SessionMonth",
+                "type": "string",
+                "value": "@{formatDateTime(utcNow(),'MMMM')}"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_OPNo": {
+          "runAfter": {
+            "Initialize_variable_SessionMonth": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "OPNo",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_OPText": {
+          "runAfter": {
+            "Initialize_variable_OPNo": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "OPText",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_Transformed": {
+          "runAfter": {
+            "Initialize_variable_OPText": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Transformed",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      "outputs": {}
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

@@ -1,0 +1,46 @@
+Revised Estimate report WF
+@startuml Revised Estimate Generation
+skinparam sequenceArrowThickness 1
+skinparam roundcorner 8
+skinparam sequenceParticipantBorderColor #534AB7
+skinparam sequenceParticipantBackgroundColor #EEEDFE
+skinparam sequenceParticipantFontColor #3C3489
+skinparam sequenceArrowColor #534AB7
+skinparam noteBorderColor #1D9E75
+skinparam noteBackgroundColor #E1F5EE
+
+
+title Revised Estimate Generation
+
+actor "User" as user
+participant "Bulk import \nWebPart" as bi
+participant "SPFx Web Part\n(Revised Estimate)" as spfx
+participant "Power Automate" as pa
+participant "Azure Functions" as af
+participant "SharePoint\nLists & Libraries" as sp
+participant "documents.un.org" as docun
+
+
+user -> bi : For various stages \nusers can upload data for \nRevised estimate report,\nACABQ, GA Approved
+==Parse OPs==
+user -> spfx : Import OPs for all Resolutions
+spfx -> af : Call Azure Function\n to pull OPs for each Resolution
+af -> docun : Fetch resolution\n.docx file
+docun -> af : Return document
+af -> spfx : Parse Operative\nParagraphs from doc \nand Process it
+user -> spfx : Match OPs to\nResolution / Mandate
+
+==Generate Revised Estimate Report==
+user -> spfx : Initiate Revised\nEstimate import
+spfx -> af : Call Azure Function\nwith Resolutions JSON data
+
+
+
+af -> af : Generate Revised\nEstimate report (.docx)
+af -> sp : Upload RE report\nto Document Set
+af -> pa : Return completion
+pa -> spfx : Notify complete
+spfx -> user : Display success\nconfirmation
+
+
+@enduml

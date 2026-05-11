@@ -1,0 +1,1221 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline_1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedsharepointonline_63e53"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      },
+      "shared_office365": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedoffice365_82eca"
+        },
+        "api": {
+          "name": "shared_office365"
+        }
+      },
+      "shared_sharepointonline": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedsharepointonline_4403a"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      },
+      "shared_office365_1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedoffice365_4aca4"
+        },
+        "api": {
+          "name": "shared_office365"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "0a306a70-bb91-45c5-8214-f9594b9a063b"
+          },
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "DraftResolution": {
+                  "type": "string"
+                },
+                "DraftResolutionTitle": {
+                  "type": "string"
+                },
+                "FormLink": {
+                  "type": "string"
+                },
+                "EmailType": {
+                  "type": "string"
+                },
+                "FormName": {
+                  "type": "string"
+                },
+                "SendTo": {
+                  "type": "string"
+                },
+                "Action": {
+                  "type": "string"
+                },
+                "CurrentUser": {
+                  "type": "string"
+                },
+                "UserEmail": {
+                  "type": "string"
+                },
+                "MandateCategory": {
+                  "type": "string"
+                },
+                "DateTimestamp": {
+                  "type": "string"
+                },
+                "Comments": {
+                  "type": "string"
+                },
+                "BulkUpdate": {
+                  "type": "boolean"
+                },
+                "FileName": {
+                  "type": "string"
+                },
+                "SessionNumber": {
+                  "type": "string"
+                },
+                "SiteUrl": {
+                  "type": "string"
+                },
+                "ReviewerType": {
+                  "type": "string"
+                },
+                "BudgetSection": {
+                  "type": "string"
+                }
+              }
+            },
+            "method": "POST",
+            "triggerAuthenticationType": "All"
+          }
+        }
+      },
+      "actions": {
+        "Initialize_variable": {
+          "runAfter": {
+            "Initialize_variable__-_Attachments": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "8f8a9c99-d7c8-4d8f-b138-1b3e364782fe"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "SPGroupUsers",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_Email_Props": {
+          "runAfter": {
+            "Initialize_variable_CommentWithLine": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "a903a08b-5ff4-4477-97f4-408eb656f5c9"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varEmailPropCol",
+                "type": "object",
+                "value": {
+                  "StatusID": "@triggerBody()?['StatusID']",
+                  "DraftRes": "@triggerBody()?['DraftResolution']",
+                  "DraftResTitle": "@triggerBody()?['DraftResolutionTitle']",
+                  "FormLink": "@triggerBody()?['FormLink']",
+                  "FormName": "@triggerBody()?['FormName']",
+                  "SendTo": "@triggerBody()?['SendTo']",
+                  "User": "@triggerBody()?['CurrentUser']",
+                  "MandateCategory": "@triggerBody()?['MandateCategory']",
+                  "Datetimestamp": "@triggerBody()?['DateTimestamp']",
+                  "Comments": "@triggerBody()?['Comments']",
+                  "ReviewerType": "@triggerBody()?['ReviewerType']"
+                }
+              }
+            ]
+          }
+        },
+        "Try": {
+          "actions": {
+            "Condition_to_check_empty_props": {
+              "actions": {
+                "Parse_JSON": {
+                  "runAfter": {
+                    "Send_an_HTTP_request_to_Get_Items_from_Email_list": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "a8ec61da-25c6-40ff-b29c-881bb3814e22"
+                  },
+                  "type": "ParseJson",
+                  "inputs": {
+                    "content": "@body('Send_an_HTTP_request_to_Get_Items_from_Email_list')",
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "Title": {
+                                "type": "string"
+                              },
+                              "WFScenario": {
+                                "type": "string"
+                              },
+                              "EN_Body": {
+                                "type": "string"
+                              },
+                              "Send_To": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "Title",
+                              "WFScenario",
+                              "EN_Body",
+                              "Send_To"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "Loop_and_get_groups": {
+                  "foreach": "@split(variables('SendTo'),';')",
+                  "actions": {
+                    "Condition": {
+                      "actions": {
+                        "Send_an_HTTP_request_to_get_SPGroups": {
+                          "runAfter": {},
+                          "metadata": {
+                            "operationMetadataId": "1c03f269-93a3-472d-b76a-7607247d247f"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "connectionName": "shared_sharepointonline_1",
+                              "operationId": "HttpRequest"
+                            },
+                            "parameters": {
+                              "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                              "parameters/method": "GET",
+                              "parameters/uri": "_api/web/sitegroups/getbyname('@{items('Loop_and_get_groups')}')/users",
+                              "parameters/headers": {
+                                "Content-Type": "application/json;odata=nometadata",
+                                "Accept": "application/json;odata=nometadata"
+                              }
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        },
+                        "Parse_JSON_SPGroups": {
+                          "runAfter": {
+                            "Send_an_HTTP_request_to_get_SPGroups": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "1db15601-1e69-4a91-81f4-187b0bb71db0"
+                          },
+                          "type": "ParseJson",
+                          "inputs": {
+                            "content": "@body('Send_an_HTTP_request_to_get_SPGroups')",
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Id": {
+                                        "type": "integer"
+                                      },
+                                      "IsHiddenInUI": {
+                                        "type": "boolean"
+                                      },
+                                      "LoginName": {
+                                        "type": "string"
+                                      },
+                                      "Title": {
+                                        "type": "string"
+                                      },
+                                      "PrincipalType": {
+                                        "type": "integer"
+                                      },
+                                      "Email": {
+                                        "type": "string"
+                                      },
+                                      "Expiration": {
+                                        "type": "string"
+                                      },
+                                      "IsEmailAuthenticationGuestUser": {
+                                        "type": "boolean"
+                                      },
+                                      "IsShareByEmailGuestUser": {
+                                        "type": "boolean"
+                                      },
+                                      "IsSiteAdmin": {
+                                        "type": "boolean"
+                                      },
+                                      "UserId": {},
+                                      "UserPrincipalName": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "Id",
+                                      "IsHiddenInUI",
+                                      "LoginName",
+                                      "Title",
+                                      "PrincipalType",
+                                      "Email",
+                                      "Expiration",
+                                      "IsEmailAuthenticationGuestUser",
+                                      "IsShareByEmailGuestUser",
+                                      "IsSiteAdmin",
+                                      "UserId",
+                                      "UserPrincipalName"
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "Apply_to_each": {
+                          "foreach": "@body('Parse_JSON_SPGroups')?['value']",
+                          "actions": {
+                            "Append_to_string_variable": {
+                              "runAfter": {},
+                              "metadata": {
+                                "operationMetadataId": "3333eadf-db41-41be-9e94-5753fdf405c5"
+                              },
+                              "type": "AppendToStringVariable",
+                              "inputs": {
+                                "name": "SPGroupUsers",
+                                "value": "@concat(items('Apply_to_each')['Email'], ';')"
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "Parse_JSON_SPGroups": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "663b50ee-6368-47db-8056-4389c4f59912"
+                          },
+                          "type": "Foreach"
+                        }
+                      },
+                      "runAfter": {},
+                      "expression": {
+                        "greater": [
+                          "@length(items('Loop_and_get_groups'))",
+                          0
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "d7b2c553-8d30-4259-af35-885416c36a68"
+                      },
+                      "type": "If"
+                    }
+                  },
+                  "runAfter": {
+                    "Condition_3": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "c7d22a97-a657-4685-9194-f49ce960d6f0"
+                  },
+                  "type": "Foreach"
+                },
+                "Condition_to_check_empty_Send_To": {
+                  "actions": {
+                    "Condition_to_check_BulkUpdate_is_true_or_false": {
+                      "actions": {
+                        "Append_to_array_variable": {
+                          "runAfter": {
+                            "Set_variable_4": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "d0fc9dc6-29f2-4268-a04d-d87d21e785c8"
+                          },
+                          "type": "AppendToArrayVariable",
+                          "inputs": {
+                            "name": "attachments",
+                            "value": {
+                              "Name": "@triggerBody()?['FileName']",
+                              "ContentBytes": "@body('Get_file_content_using_path')"
+                            }
+                          }
+                        },
+                        "Subject": {
+                          "runAfter": {
+                            "Append_to_array_variable": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "5b200156-9aee-47e7-ab9d-c8f5b0548892"
+                          },
+                          "type": "Compose",
+                          "inputs": "@replace(body('Parse_JSON')?['value'][0]?['Title'],'[template name]',triggerBody()?['FormName'])"
+                        },
+                        "Send_an_email_from_a_shared_mailbox_(V2)_2": {
+                          "runAfter": {
+                            "Condition_4": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "ee5dc854-2fde-40a6-9b20-439183837f65"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                              "connectionName": "shared_office365",
+                              "operationId": "SharedMailboxSendEmailV2"
+                            },
+                            "parameters": {
+                              "emailMessage/MailboxAddress": "mrms-staging@un.org",
+                              "emailMessage/To": "@{variables('SPGroupUsers')};waykos@unicc.org;alqurneh@unicc.org;",
+                              "emailMessage/Subject": "@outputs('Subject')",
+                              "emailMessage/Body": "<p>@{variables('Body')}</p>",
+                              "emailMessage/Attachments": "@variables('attachments')",
+                              "emailMessage/Importance": "Normal"
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        },
+                        "Get_file_content_using_path": {
+                          "runAfter": {},
+                          "metadata": {
+                            "operationMetadataId": "b27d85cc-caf8-4c5d-bf89-dc50a5e21f03"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "connectionName": "shared_sharepointonline",
+                              "operationId": "GetFileContentByPath"
+                            },
+                            "parameters": {
+                              "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                              "path": "BulkUpdateFiles/@{triggerBody()?['FileName']}",
+                              "inferContentType": true
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        },
+                        "Get_User_Groups": {
+                          "runAfter": {
+                            "Get_file_content_using_path": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "40cd69f0-2dde-4a47-b23d-1b592ee71861"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "connectionName": "shared_sharepointonline",
+                              "operationId": "HttpRequest"
+                            },
+                            "parameters": {
+                              "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                              "parameters/method": "GET",
+                              "parameters/uri": "/_api/web/siteusers/getbyemail('@{triggerBody()?['UserEmail']}')/groups"
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        },
+                        "Set_variable_3": {
+                          "runAfter": {
+                            "Filter_array": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "6f142f41-6b7f-4b0d-bf33-ca0c0fbc836f"
+                          },
+                          "type": "SetVariable",
+                          "inputs": {
+                            "name": "Groupname",
+                            "value": "@{body('Filter_array')[0]?['Title']}"
+                          }
+                        },
+                        "Filter_array": {
+                          "runAfter": {
+                            "Get_User_Groups": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "d1cf0fe0-bc09-450b-91a6-49ee576e6f89"
+                          },
+                          "type": "Query",
+                          "inputs": {
+                            "from": "@body('Get_User_Groups')?['d']?['results']",
+                            "where": "@and(\n  not(contains(item()?['Title'], 'Visitors')),\n  not(contains(item()?['Title'], 'Members')),\n  not(contains(item()?['Title'], 'Owners'))\n)\n"
+                          }
+                        },
+                        "Set_variable_4": {
+                          "runAfter": {
+                            "Set_variable_3": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "25fbcd36-a26a-402e-9ae9-7f3e74ca9ced"
+                          },
+                          "type": "SetVariable",
+                          "inputs": {
+                            "name": "sessionLink",
+                            "value": "@variables('SessionNumbers')"
+                          }
+                        },
+                        "Condition_4": {
+                          "actions": {
+                            "Email_Body": {
+                              "runAfter": {},
+                              "metadata": {
+                                "operationMetadataId": "4953d6cc-d844-4ecd-aa1d-a0be4f5b0b18"
+                              },
+                              "type": "Compose",
+                              "inputs": "@replace(\r\n  replace(\r\n    replace(\r\n      replace(\r\n        replace(\r\n          replace(\r\n            replace(\r\n              body('Parse_JSON')?['value'][0]?['EN_Body'],\r\n              '[date]', triggerBody()?['DateTimestamp']\r\n            ),\r\n            '[User]', triggerBody()?['CurrentUser']\r\n          ),\r\n          '[template name]', triggerBody()?['FormName']\r\n        ),\r\n        '[HRC]', variables('sessionLink')\r\n      ),\r\n      '[group]', variables('Groupname')\r\n    ),\r\n    '[ReviewerType]', triggerBody()?['ReviewerType']\r\n  ),\r\n  '[BudgetSection]', triggerBody()?['BudgetSection']\r\n)"
+                            },
+                            "Set_variable_5": {
+                              "runAfter": {
+                                "Email_Body": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "0a180ca7-2a03-4b35-b9fc-ca1f93110916"
+                              },
+                              "type": "SetVariable",
+                              "inputs": {
+                                "name": "Body",
+                                "value": "@{replace(\r\n  replace(\r\n    replace(\r\n      replace(\r\n        replace(\r\n          replace(\r\n            replace(\r\n              body('Parse_JSON')?['value'][0]?['EN_Body'],\r\n              '[date]', triggerBody()?['DateTimestamp']\r\n            ),\r\n            '[User]', triggerBody()?['CurrentUser']\r\n          ),\r\n          '[template name]', triggerBody()?['FormName']\r\n        ),\r\n        '[HRC]', variables('sessionLink')\r\n      ),\r\n      '[group]', variables('Groupname')\r\n    ),\r\n    '[ReviewerType]', triggerBody()?['ReviewerType']\r\n  ),\r\n  '[BudgetSection]', triggerBody()?['BudgetSection']\r\n)}"
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "Subject": [
+                              "Succeeded"
+                            ]
+                          },
+                          "else": {
+                            "actions": {
+                              "Set_variable_6": {
+                                "runAfter": {},
+                                "metadata": {
+                                  "operationMetadataId": "0a723593-a523-4e9f-a320-5ae74aedcc8b"
+                                },
+                                "type": "SetVariable",
+                                "inputs": {
+                                  "name": "Body",
+                                  "value": "@{replace(\r\n  replace(\r\n    replace(\r\n      replace(\r\n        replace(\r\n          replace(\r\n            replace(\r\n              replace(\r\n                body('Parse_JSON')?['value'][0]?['EN_Body'],\r\n                '[date]', triggerBody()?['DateTimestamp']\r\n              ),\r\n              '[User]', triggerBody()?['CurrentUser']\r\n            ),\r\n            '[template name]', triggerBody()?['FormName']\r\n          ),\r\n          '[HRC]', variables('sessionLink')\r\n        ),\r\n        '[group]', variables('Groupname')\r\n      ),\r\n      '[ReviewerType]', triggerBody()?['ReviewerType']\r\n    ),\r\n    '[BudgetSection]', ''\r\n  ),\r\n  'Budget Section(s)&#58;', ''\r\n)}"
+                                }
+                              }
+                            }
+                          },
+                          "expression": {
+                            "equals": [
+                              "@triggerBody()?['FormName']",
+                              "Miscellaneous"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "87653fe7-b157-49e9-bed8-77b66e8036a6"
+                          },
+                          "type": "If"
+                        }
+                      },
+                      "runAfter": {},
+                      "else": {
+                        "actions": {
+                          "Send_an_email_from_a_shared_mailbox_(V2)": {
+                            "runAfter": {},
+                            "metadata": {
+                              "operationMetadataId": "fe67c800-327a-4496-9d32-e829e7d4f4ac"
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                                "connectionName": "shared_office365_1",
+                                "operationId": "SharedMailboxSendEmailV2"
+                              },
+                              "parameters": {
+                                "emailMessage/MailboxAddress": "mrms-staging@un.org",
+                                "emailMessage/To": "@{variables('SPGroupUsers')};alqurneh@unicc.org;waykos@unicc.org;",
+                                "emailMessage/Subject": "@outputs('Compose_MailSubject')",
+                                "emailMessage/Body": "@outputs('Compose_MailBody')",
+                                "emailMessage/Importance": "Normal"
+                              },
+                              "authentication": "@parameters('$authentication')"
+                            }
+                          }
+                        }
+                      },
+                      "expression": {
+                        "equals": [
+                          "@triggerBody()?['BulkUpdate']",
+                          "@true"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "4db719ef-4497-4447-a422-264595dd3ed6"
+                      },
+                      "type": "If"
+                    }
+                  },
+                  "runAfter": {
+                    "Loop_and_get_groups": [
+                      "Succeeded"
+                    ]
+                  },
+                  "expression": {
+                    "equals": [
+                      "@empty(variables('SPGroupUsers'))",
+                      "@false"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "05cebe27-a3fd-414e-8d00-ef6cd7dad679"
+                  },
+                  "type": "If"
+                },
+                "Condition_3": {
+                  "actions": {
+                    "Set_variable": {
+                      "runAfter": {},
+                      "metadata": {
+                        "operationMetadataId": "e89c80d5-088e-48ab-b195-038497e64d3d"
+                      },
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "SendTo",
+                        "value": "@{body('Parse_JSON')?['value'][0]['Send_To']}"
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Compose_datetimestamp": [
+                      "Succeeded"
+                    ]
+                  },
+                  "else": {
+                    "actions": {
+                      "Compose_Send_To_data": {
+                        "runAfter": {},
+                        "metadata": {
+                          "operationMetadataId": "d589c32c-29ba-49c6-8978-ac46a84cb654"
+                        },
+                        "type": "Compose",
+                        "inputs": "@triggerBody()?['SendTo']"
+                      },
+                      "Set_variable_2": {
+                        "runAfter": {
+                          "Compose_Send_To_data": [
+                            "Succeeded"
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "3d623afa-5a5f-40c0-ab8a-0b740f7c8d93"
+                        },
+                        "type": "SetVariable",
+                        "inputs": {
+                          "name": "SendTo",
+                          "value": "@triggerBody()?['SendTo']"
+                        }
+                      },
+                      "Get_Comment_versions": {
+                        "runAfter": {
+                          "Set_variable_2": [
+                            "Succeeded"
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "9038c5e7-0451-450b-8b8c-50dffe7ed369"
+                        },
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "connectionName": "shared_sharepointonline_1",
+                            "operationId": "HttpRequest"
+                          },
+                          "parameters": {
+                            "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                            "parameters/method": "GET",
+                            "parameters/uri": "_api/web/lists/getbytitle('Status')/items/getbyid(@{triggerBody()?['StatusID']})/versions?$select=Comments,Editor,Modified",
+                            "parameters/headers": {
+                              "Content-Type": "application/json;odata=nometadata",
+                              "Accept": "application/json;odata=nometadata"
+                            }
+                          },
+                          "authentication": "@parameters('$authentication')"
+                        }
+                      },
+                      "Parse_JSON_Comments": {
+                        "runAfter": {
+                          "Get_Comment_versions": [
+                            "Succeeded"
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "ea656a2f-298f-4fa1-9e8e-9c81dd67e4bd"
+                        },
+                        "type": "ParseJson",
+                        "inputs": {
+                          "content": "@outputs('Get_Comment_versions')?['body']",
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "Comments": {},
+                                    "Modified": {
+                                      "type": "string"
+                                    },
+                                    "Editor": {
+                                      "type": "object",
+                                      "properties": {
+                                        "LookupId": {
+                                          "type": "integer"
+                                        },
+                                        "LookupValue": {
+                                          "type": "string"
+                                        },
+                                        "Email": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "Comments",
+                                    "Modified",
+                                    "Editor"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "Apply_to_each_comment_version": {
+                        "foreach": "@body('Parse_JSON_Comments')?['value']",
+                        "actions": {
+                          "Condition_2": {
+                            "actions": {
+                              "Append_to_string_variable_2": {
+                                "runAfter": {},
+                                "metadata": {
+                                  "operationMetadataId": "cad5f0fb-aa81-4dec-83c0-ec714df1f449"
+                                },
+                                "type": "AppendToStringVariable",
+                                "inputs": {
+                                  "name": "CommentWithLine",
+                                  "value": "@{items('Apply_to_each_comment_version')?['Editor']?['LookupValue']} (@{convertFromUtc(items('Apply_to_each_comment_version')['Modified'], 'Central Europe Standard Time', 'dd/MM/yyyy hh:mm tt')}): @{items('Apply_to_each_comment_version')?['Comments']}<br>"
+                                }
+                              }
+                            },
+                            "runAfter": {},
+                            "expression": {
+                              "equals": [
+                                "@empty(items('Apply_to_each_comment_version')['Comments'])",
+                                "@false"
+                              ]
+                            },
+                            "metadata": {
+                              "operationMetadataId": "9e0407aa-5f3a-48ff-897f-73289f1f134f"
+                            },
+                            "type": "If"
+                          }
+                        },
+                        "runAfter": {
+                          "Parse_JSON_Comments": [
+                            "Succeeded"
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "06cb96fa-4d92-498a-bade-a9f53a4fbaca"
+                        },
+                        "type": "Foreach"
+                      },
+                      "Compose_comments": {
+                        "runAfter": {
+                          "Apply_to_each_comment_version": [
+                            "Succeeded"
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "aaa7a995-2cda-44b8-8045-c2ef350b854b"
+                        },
+                        "type": "Compose",
+                        "inputs": "@variables('CommentWithLine')"
+                      },
+                      "Set_variable_link": {
+                        "runAfter": {
+                          "Compose_comments": [
+                            "Succeeded"
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "4e715aeb-420b-4d54-b017-82ad081d2f59"
+                        },
+                        "type": "SetVariable",
+                        "inputs": {
+                          "name": "Composelink",
+                          "value": "<a href='@{variables('varEmailPropCol')['FormLink']}'>here</a>"
+                        }
+                      },
+                      "Compose_MailSubject": {
+                        "runAfter": {
+                          "Set_variable_link": [
+                            "Succeeded"
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "a96866d9-547f-4077-8188-7bbde7acce15"
+                        },
+                        "type": "Compose",
+                        "inputs": "@replace(replace(body('Parse_JSON')?['value'][0]?['Title'], '~sDraftResolution~', variables('varEmailPropCol')['DraftRes']),'~sFormName~',variables('varEmailPropCol')['FormName'])"
+                      },
+                      "Compose_MailBody": {
+                        "runAfter": {
+                          "Compose_MailSubject": [
+                            "Succeeded"
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "2a43be40-3cbb-4ce5-bd4c-d6dda8f06fa4"
+                        },
+                        "type": "Compose",
+                        "inputs": "@replace(replace(replace(replace(replace(replace(replace(replace(body('Parse_JSON')?['value'][0]?['EN_Body'], '~bDraftResolution~', variables('varEmailPropCol')['DraftRes']),'~bDraftResolutionTitle~',variables('varEmailPropCol')['DraftResTitle']),'~bFormName~',variables('varEmailPropCol')['FormName']),'~bFormLink~',variables('Composelink')),'~bMandateCategory~',variables('varEmailPropCol')['MandateCategory']),'~bUsernGrp~',variables('varEmailPropCol')['User']),if(empty('~Comments~'),'','~Comments~'),if(empty(outputs('Compose_comments')),'  ',outputs('Compose_comments'))),if(empty('~Datetimestamp~'),'','~Datetimestamp~'),if(empty(outputs('Compose_datetimestamp')),'A',variables('varEmailPropCol')['Datetimestamp']))"
+                      }
+                    }
+                  },
+                  "expression": {
+                    "equals": [
+                      "@triggerBody()?['BulkUpdate']",
+                      "@true"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "6023d73b-41ef-48ab-92f4-ba24c345a32a"
+                  },
+                  "type": "If"
+                },
+                "Compose_datetimestamp": {
+                  "runAfter": {
+                    "Parse_JSON": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "df596a5d-698f-4059-b937-c3a4a46c71c6"
+                  },
+                  "type": "Compose",
+                  "inputs": "@variables('varEmailPropCol')['Datetimestamp']"
+                },
+                "Send_an_HTTP_request_to_Get_Items_from_Email_list": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "ecac99fe-688b-4624-9b41-a58ae293531b"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "connectionName": "shared_sharepointonline_1",
+                      "operationId": "HttpRequest"
+                    },
+                    "parameters": {
+                      "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                      "parameters/method": "GET",
+                      "parameters/uri": "/_api/Web/lists/GetByTitle('EmailTemplatesHRC')/items?$select=Title,EN_Body,EmailType,FormType,WFScenario,Send_To&$filter=WFScenario eq '@{triggerBody()?['Action']}' and EmailType eq '@{triggerBody()?['EmailType']}'",
+                      "parameters/headers": {
+                        "Content-Type": "application/json;odata=nometadata",
+                        "Accept": "application/json;odata=nometadata"
+                      }
+                    },
+                    "authentication": "@parameters('$authentication')"
+                  }
+                }
+              },
+              "runAfter": {},
+              "else": {
+                "actions": {
+                  "Response_Failure": {
+                    "runAfter": {},
+                    "metadata": {
+                      "operationMetadataId": "4c299add-8a0e-4474-95ec-c3b58924aac6"
+                    },
+                    "type": "Response",
+                    "kind": "Http",
+                    "inputs": {
+                      "statusCode": 404,
+                      "headers": {
+                        "Content-Type": "application/json"
+                      },
+                      "body": "Failure"
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@empty(triggerBody()?['DraftResolution'])",
+                      "@false"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@empty(triggerBody()?['DraftResolutionTitle'])",
+                      "@false"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@empty(triggerBody()?['FormLink'])",
+                      "@false"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@empty(triggerBody()?['FormName'])",
+                      "@false"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@empty(triggerBody()?['SendTo'])",
+                      "@false"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@empty(triggerBody()?['Action'])",
+                      "@false"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@empty(triggerBody()?['CurrentUser'])",
+                      "@false"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@empty(triggerBody()?['MandateCategory'])",
+                      "@false"
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "f1fd6295-0141-4818-83fc-d65a22444c87"
+              },
+              "type": "If"
+            },
+            "Response": {
+              "runAfter": {
+                "Condition_to_check_empty_props": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "0e0e6007-7b71-47d3-88e1-80ee6699f1ac"
+              },
+              "type": "Response",
+              "kind": "Http",
+              "inputs": {
+                "statusCode": 200
+              }
+            }
+          },
+          "runAfter": {
+            "Initialize_variable_GroupName": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "145d53a0-3780-4f51-b659-13fec7eff1f2"
+          },
+          "type": "Scope"
+        },
+        "Catch": {
+          "actions": {
+            "Response_2": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "2de5cccb-3637-4ae4-a5bb-9995a6e86de6"
+              },
+              "type": "Response",
+              "kind": "Http",
+              "inputs": {
+                "statusCode": 502
+              }
+            },
+            "Terminate": {
+              "runAfter": {
+                "Response_2": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "ac1fdd3d-8fe7-4bd3-95ce-70373a5f8e6f"
+              },
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Failed"
+              }
+            }
+          },
+          "runAfter": {
+            "Try": [
+              "Failed"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "61faeff6-d7ea-4eaa-9b91-c1ac218c54c1"
+          },
+          "type": "Scope"
+        },
+        "Initialize_variable_Link": {
+          "runAfter": {
+            "Initialize_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c410afc3-cdb9-4df4-b840-17c362d017a1"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Composelink",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_CommentWithLine": {
+          "runAfter": {
+            "Initialize_variable__-_sessionLink": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "23966917-2cec-4451-8aab-5eabfa9c1ce5"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "CommentWithLine",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable__-_Attachments": {
+          "runAfter": {
+            "Initialize_variable_2": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "7673587e-1ac6-4168-94ec-28eccf780173"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "attachments",
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "Initialize_variable__-_sessionLink": {
+          "runAfter": {
+            "Initialize_variable_Link": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "b45de4ab-be8b-43ed-a9e5-f9ffe7c65c3d"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "sessionLink",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_SendTo": {
+          "runAfter": {
+            "Initialize_variable_Email_Props": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d254ec33-d505-4fd6-8cbc-21fefc4da724"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "SendTo",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_GroupName": {
+          "runAfter": {
+            "Initialize_variable_SendTo": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "9958fca3-c513-4e40-bca1-fb8d8bd00103"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Groupname",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_2": {
+          "runAfter": {
+            "Initialize_variable_3": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c9bc803a-b479-4049-9252-ec12621ec377"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "SessionNumbers",
+                "type": "string",
+                "value": "@triggerBody()?['SessionNumber']"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_3": {
+          "runAfter": {
+            "Initialize_variable_4": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "41f8e51d-9c6e-489d-b66f-7f1ecac0c061"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "BudgetSection",
+                "type": "string",
+                "value": "@triggerBody()?['BudgetSection']"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_4": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "9816f79a-d122-490d-af9d-21477a01965e"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Body",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

@@ -1,0 +1,1583 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_approvals_1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedapprovals_ddcc3"
+        },
+        "api": {
+          "name": "shared_approvals"
+        }
+      },
+      "shared_sharepointonline_1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedsharepointonline_63e53"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      },
+      "shared_office365": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedoffice365_4aca4"
+        },
+        "api": {
+          "name": "shared_office365"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "e0700dbb-9359-497b-b480-a5a4b435f5e9"
+          },
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "method": "POST",
+            "triggerAuthenticationType": "All"
+          }
+        }
+      },
+      "actions": {
+        "Initialize_Draft_Resolution_variable": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "dbaa1221-9065-4f5f-9c3a-49d31f19dd75"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "DraftResolution",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_Original_Draft_Resolution_variable": {
+          "runAfter": {
+            "Initialize_Draft_Resolution_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "235e65a3-bbfe-4100-94df-656ba603500e"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "OriginalDraftRes",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_ResId_variable": {
+          "runAfter": {
+            "Initialize_Original_Draft_Resolution_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "4a8c070b-c9a8-4fe1-8489-6e8a7b0c53c2"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ResId",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_Resolution_title_variable": {
+          "runAfter": {
+            "Initialize_ResId_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "9eeb2f16-3d00-4122-8344-2db8261fddaf"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ResolutionTitle",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_Users_Collection": {
+          "runAfter": {
+            "Initialize_Resolution_title_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "7de60841-2aad-4980-b62a-bbf385cded44"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "UsersCol",
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_SPGroupUsers": {
+          "runAfter": {
+            "Initialize_variable_Users_Collection": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d5833862-9099-4cdb-8e41-87e402476ec0"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "SPGroupUsers",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_Attachment": {
+          "runAfter": {
+            "Initialize_variable_SPGroupUsers": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "4611ef94-9aae-4921-a78b-8aaba1758972"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varAttachment",
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "Initialize_Amendments_for_OHCHR_and_Generic_Mails": {
+          "runAfter": {
+            "Initialize_variable_Attachment": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "700097b2-a3b3-4db5-bf5b-952b84e02282"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varAmendment",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_Dashboard_link": {
+          "runAfter": {
+            "Initialize_Amendments_for_OHCHR_and_Generic_Mails": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "04439146-61f4-40ad-9866-216f67904af6"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "dashboardlink",
+                "type": "string",
+                "value": "<a href='https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV/SitePages/Mandate-Dashboard.aspx'>here</a>"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_ShortendResolution_Singleline": {
+          "runAfter": {
+            "Initialize_variable_MRMSTrainingPageLink_2": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "3ebd67eb-3c11-4ac1-b61b-71a56327f762"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ShortendResolution",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_EmptyArray": {
+          "runAfter": {
+            "Initialize_variable_ShortendResolution_Singleline": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "151b3eca-fc56-496c-98e5-66a3601f0040"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "EmptyArray",
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "Set_variable_OriginalDraftResolution": {
+          "runAfter": {
+            "Initialize_variable_MMSapprovername": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c6986578-0d76-44ae-809c-d8cc2b937c32"
+          },
+          "type": "SetVariable",
+          "inputs": {
+            "name": "OriginalDraftRes",
+            "value": "@{triggerOutputs()['headers']?['OriginalResolution']}"
+          }
+        },
+        "Scope_Emails": {
+          "actions": {
+            "Switch": {
+              "runAfter": {
+                "Condition_to_check_action": [
+                  "Succeeded"
+                ]
+              },
+              "cases": {
+                "Case_MMS": {
+                  "case": "MMS",
+                  "actions": {
+                    "Set_variable_DraftResolution": {
+                      "runAfter": {},
+                      "metadata": {
+                        "operationMetadataId": "189b8437-4185-4944-9b02-611c5644e340"
+                      },
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "DraftResolution",
+                        "value": "@{triggerOutputs()['headers']?['DraftResolution']}"
+                      }
+                    },
+                    "Set_variable_ResId": {
+                      "runAfter": {
+                        "Set_variable_DraftResolution": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "1a41d0df-591f-488f-adc6-0963ae1e0923"
+                      },
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "ResId",
+                        "value": "@{triggerOutputs()['headers']?['ResId']}"
+                      }
+                    },
+                    "Set_variable_ResolutionTitle": {
+                      "runAfter": {
+                        "Set_variable_ResId": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "5d197c5b-5067-41da-8e0f-69b66af4d0ba"
+                      },
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "ResolutionTitle",
+                        "value": "@{triggerOutputs()['headers']?['ResolutionTitle']}"
+                      }
+                    },
+                    "Compose_MMS_subject_line": {
+                      "runAfter": {
+                        "Condition_to_check_attachment_length": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "eb9fcd52-ad7d-4440-8b79-f5fe42cb3976"
+                      },
+                      "type": "Compose",
+                      "inputs": "@replace(body('Parse_JSON_4')?['value'][0]?['Title'], '{DraftResolution}', variables('DraftResolution'))"
+                    },
+                    "Compose_MMS_subject_line_2": {
+                      "runAfter": {
+                        "Compose_MMS_subject_line": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "c0cbb6f2-e416-43e6-8f41-036e7e15a534"
+                      },
+                      "type": "Compose",
+                      "inputs": "@replace(outputs('Compose_MMS_subject_line'), '{OriginalDraftResolution}', variables('OriginalDraftRes'))"
+                    },
+                    "Compose_body_line_OriginalResolution": {
+                      "runAfter": {
+                        "Compose_MMS_subject_line_2": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "00bb3f3e-3efc-484b-bdf4-f78a8c55ae0a"
+                      },
+                      "type": "Compose",
+                      "inputs": "@replace(body('Parse_JSON_4')?['value'][0]?['EN_Body'], '~OriginalDraftResolution~', variables('OriginalDraftRes'))"
+                    },
+                    "Compose_body_line_ResolutionTitle": {
+                      "runAfter": {
+                        "Compose_body_line_OriginalResolution": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "9fb79af1-b5fd-4e50-be60-c51857b65002"
+                      },
+                      "type": "Compose",
+                      "inputs": "@replace(outputs('Compose_body_line_OriginalResolution'), '~ResolutionTitle~', variables('ResolutionTitle'))"
+                    },
+                    "Condition_to_check_attachment_length": {
+                      "actions": {
+                        "Append_to_array_variable_attachment": {
+                          "runAfter": {},
+                          "metadata": {
+                            "operationMetadataId": "29affa41-4998-455b-b920-edc227d77762"
+                          },
+                          "type": "AppendToArrayVariable",
+                          "inputs": {
+                            "name": "varAttachment",
+                            "value": "@triggerOutputs()['Body']?['Attachments'][0]"
+                          }
+                        }
+                      },
+                      "runAfter": {
+                        "Set_variable_ResolutionTitle": [
+                          "Succeeded"
+                        ]
+                      },
+                      "else": {
+                        "actions": {
+                          "Set_variable": {
+                            "runAfter": {},
+                            "metadata": {
+                              "operationMetadataId": "42d14b42-73bb-4eca-aed1-5e73d707060b"
+                            },
+                            "type": "SetVariable",
+                            "inputs": {
+                              "name": "varAttachment",
+                              "value": "@variables('EmptyArray')"
+                            }
+                          }
+                        }
+                      },
+                      "expression": {
+                        "greater": [
+                          "@length(triggerOutputs()['Body']?['Attachments'])",
+                          0
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "10b3f07e-c796-41d4-94f6-59e024897d97"
+                      },
+                      "type": "If"
+                    },
+                    "Start_and_wait_for_an_MMSApproval": {
+                      "runAfter": {
+                        "Compose_replace_special_chars": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "857e80c6-45c4-4bde-9b9a-10b2c679e6eb"
+                      },
+                      "type": "OpenApiConnectionWebhook",
+                      "inputs": {
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_approvals",
+                          "connectionName": "shared_approvals_1",
+                          "operationId": "StartAndWaitForAnApproval"
+                        },
+                        "parameters": {
+                          "approvalType": "CustomResponse",
+                          "WebhookApprovalCreationInput/responseOptions": [
+                            "Yes",
+                            "No"
+                          ],
+                          "WebhookApprovalCreationInput/title": "@outputs('Compose_MMS_subject_line_2')",
+                          "WebhookApprovalCreationInput/assignedTo": "@{variables('SPGroupUsers')};",
+                          "WebhookApprovalCreationInput/details": "@outputs('Compose_replace_special_chars')",
+                          "WebhookApprovalCreationInput/itemLink": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV/SitePages/Resolution.aspx?_source=https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV/SitePages/Mandate-Dashboard.aspx&ResolutionID=@{variables('ResId')}&FormMode=Edit",
+                          "WebhookApprovalCreationInput/itemLinkDescription": "@variables('DraftResolution')",
+                          "WebhookApprovalCreationInput/requestor": "_sa_UNOG_MRMS@unitednations.onmicrosoft.com;",
+                          "WebhookApprovalCreationInput/enableNotifications": true,
+                          "WebhookApprovalCreationInput/enableReassignment": true,
+                          "WebhookApprovalCreationInput/attachments": "@variables('varAttachment')"
+                        },
+                        "authentication": "@parameters('$authentication')"
+                      }
+                    },
+                    "Send_an_HTTP_request_to_get_comments": {
+                      "runAfter": {
+                        "Set_variable_MMSdetails": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "7d73e1ab-e980-401a-b6a8-04d2e31f5900"
+                      },
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "connectionName": "shared_sharepointonline_1",
+                          "operationId": "HttpRequest"
+                        },
+                        "parameters": {
+                          "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                          "parameters/method": "GET",
+                          "parameters/uri": "/_api/web/lists/getbytitle('Resolutions')/items?$select=Id,Comments&$filter=Id eq @{variables('ResId')}",
+                          "parameters/headers": {
+                            "Content-Type": "application/json;odata=nometadata",
+                            "Accept": "application/json;odata=nometadata"
+                          }
+                        },
+                        "authentication": "@parameters('$authentication')"
+                      }
+                    },
+                    "Parse_JSON": {
+                      "runAfter": {
+                        "Send_an_HTTP_request_to_get_comments": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "5d4a90b6-6c84-4519-8be9-ff9a1ce8e8f7"
+                      },
+                      "type": "ParseJson",
+                      "inputs": {
+                        "content": "@body('Send_an_HTTP_request_to_get_comments')",
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "value": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "Id": {
+                                    "type": "integer"
+                                  },
+                                  "Comments": {},
+                                  "ID": {
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "Id",
+                                  "Comments",
+                                  "ID"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "Set_variable_comments": {
+                      "runAfter": {
+                        "Parse_JSON": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "ef49ab25-fe75-4d0d-bfd4-f8db325260b4"
+                      },
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "currComments",
+                        "value": "@{first(body('Parse_JSON')?['value'])['Comments']}"
+                      }
+                    },
+                    "Switch_PBI": {
+                      "runAfter": {
+                        "Set_variable_comments": [
+                          "Succeeded"
+                        ]
+                      },
+                      "cases": {
+                        "Case_Yes": {
+                          "case": "Yes",
+                          "actions": {
+                            "Apply_to_each_2": {
+                              "foreach": "@outputs('Start_and_wait_for_an_MMSApproval')?['body/responses']",
+                              "actions": {
+                                "Condition_2": {
+                                  "actions": {
+                                    "Update_Resolution_Comments": {
+                                      "runAfter": {},
+                                      "metadata": {
+                                        "operationMetadataId": "c7f02e9b-0a96-41a7-a2af-7fd45836393c"
+                                      },
+                                      "type": "OpenApiConnection",
+                                      "inputs": {
+                                        "host": {
+                                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                          "connectionName": "shared_sharepointonline_1",
+                                          "operationId": "HttpRequest"
+                                        },
+                                        "parameters": {
+                                          "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                          "parameters/method": "POST",
+                                          "parameters/uri": "_api/web/lists/getbytitle('Resolutions')/items(@{variables('ResId')})",
+                                          "parameters/headers": {
+                                            "Content-Type": "application/json;odata=verbose",
+                                            "Accept": "application/json;odata=verbose",
+                                            "X-HTTP-METHOD": "MERGE",
+                                            "If-Match": "*"
+                                          },
+                                          "parameters/body": " {\n        \"__metadata\":{\n        \"type\":\"SP.Data.ResolutionsItem\" \n     },\n        \"Comments\":\"@{if(empty(variables('currComments')), concat(variables('MMSapprovername'),items('Apply_to_each_2')['Comments'],' || '), concat(variables('MMSapprovername'),items('Apply_to_each_2')['Comments'],' || ',variables('currComments'),decodeUriComponent('%0A')))}\"\n}"
+                                        },
+                                        "authentication": "@parameters('$authentication')"
+                                      }
+                                    }
+                                  },
+                                  "runAfter": {},
+                                  "expression": {
+                                    "not": {
+                                      "equals": [
+                                        "@items('Apply_to_each_2')?['comments']",
+                                        "@null"
+                                      ]
+                                    }
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "a83739f2-ce7d-48b6-9107-43b8e5bd823f"
+                                  },
+                                  "type": "If"
+                                }
+                              },
+                              "runAfter": {},
+                              "metadata": {
+                                "operationMetadataId": "d2eb0e06-923e-4f5d-a0b5-b4bf10454cd7"
+                              },
+                              "type": "Foreach"
+                            }
+                          }
+                        },
+                        "Case_No": {
+                          "case": "No",
+                          "actions": {
+                            "Send_an_HTTP_request_to_SharePoint": {
+                              "runAfter": {},
+                              "metadata": {
+                                "operationMetadataId": "3e227646-68c1-486c-a605-3a08eb49f9dc"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "connectionName": "shared_sharepointonline_1",
+                                  "operationId": "HttpRequest"
+                                },
+                                "parameters": {
+                                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                  "parameters/method": "POST",
+                                  "parameters/uri": "_api/web/lists/getbytitle('Resolutions')/items(@{variables('ResId')})",
+                                  "parameters/headers": {
+                                    "Content-Type": "application/json;odata=verbose",
+                                    "Accept": "application/json;odata=verbose",
+                                    "X-HTTP-METHOD": "MERGE",
+                                    "If-Match": "*"
+                                  },
+                                  "parameters/body": " {\n        \"__metadata\":{\n        \"type\":\"SP.Data.ResolutionsItem\" \n     },\n        \"Comments\":\"@{if(empty(variables('currComments')), concat(variables('MMSapprovername'),'No DCM PBI',' || '), concat(variables('MMSapprovername'),'No DCM PBI',' || ',variables('currComments'),decodeUriComponent('%0A')))}\"\n}"
+                                },
+                                "authentication": "@parameters('$authentication')"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "default": {
+                        "actions": {}
+                      },
+                      "expression": "@outputs('Start_and_wait_for_an_MMSApproval')?['body/outcome']",
+                      "metadata": {
+                        "operationMetadataId": "24ae6fc8-73a8-4e3c-bdfa-b23309f43bf7"
+                      },
+                      "type": "Switch"
+                    },
+                    "Compose_replace_special_chars": {
+                      "runAfter": {
+                        "Compose_body_line_ResolutionTitle": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "7d4ec28f-fe59-4302-a990-6c4bd83d9d9c"
+                      },
+                      "type": "Compose",
+                      "inputs": "@replace(replace(outputs('Compose_body_line_ResolutionTitle'),'&quot;','\"'),'&#58;',':')"
+                    },
+                    "Convert_time_zone_for_MMSdetails": {
+                      "runAfter": {
+                        "Start_and_wait_for_an_MMSApproval": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "3ee59afc-a6f5-443f-843d-7704006a7522"
+                      },
+                      "type": "Expression",
+                      "kind": "ConvertTimeZone",
+                      "inputs": {
+                        "baseTime": "@{formatDateTime(outputs('Start_and_wait_for_an_MMSApproval')?['body/completionDate'], 'u')}",
+                        "formatString": "dd/MM/yyyy HH:mm",
+                        "sourceTimeZone": "UTC",
+                        "destinationTimeZone": "Romance Standard Time"
+                      }
+                    },
+                    "Set_variable_MMSdetails": {
+                      "runAfter": {
+                        "Convert_time_zone_for_MMSdetails": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "7f781b97-2878-4a00-9d13-586a220a76a1"
+                      },
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "MMSapprovername",
+                        "value": "@{concat(outputs('Start_and_wait_for_an_MMSApproval')?['body/responses'][0]?['responder/displayName'], ' ', '(', body('Convert_time_zone_for_MMSdetails'), ')', ': ')}"
+                      }
+                    }
+                  }
+                },
+                "Case_OHCHR_and_General": {
+                  "case": "OHCHRandGeneric",
+                  "actions": {
+                    "Condition_to_check_length": {
+                      "actions": {
+                        "Apply_to_each_email_items": {
+                          "foreach": "@body('Parse_JSON_4')?['value']",
+                          "actions": {
+                            "Compose_subject_line": {
+                              "runAfter": {},
+                              "metadata": {
+                                "operationMetadataId": "05cc89e8-ebb6-4619-85cc-9acbfbdc935a"
+                              },
+                              "type": "Compose",
+                              "inputs": "@replace(items('Apply_to_each_email_items')?['Title'], '{DraftResolution}', variables('OriginalDraftRes'))"
+                            },
+                            "Compose_body_line_DraftResolution": {
+                              "runAfter": {
+                                "Compose_subject_line": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "1ec07533-ccf2-4fbc-b362-21dbb1172c23"
+                              },
+                              "type": "Compose",
+                              "inputs": "@replace(items('Apply_to_each_email_items')?['EN_Body'], '~DraftResolution~', variables('OriginalDraftRes'))"
+                            },
+                            "Send_an_email_to_OHCHR_and_General": {
+                              "runAfter": {
+                                "Loop_and_get_groups_2": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "c21b3c77-fd82-4b36-81ab-eb4ecfea073d"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                                  "connectionName": "shared_office365",
+                                  "operationId": "SharedMailboxSendEmailV2"
+                                },
+                                "parameters": {
+                                  "emailMessage/MailboxAddress": "mrms-uat@un.org",
+                                  "emailMessage/To": "@variables('SPGroupUsers')",
+                                  "emailMessage/Subject": "@outputs('Compose_subject_line')",
+                                  "emailMessage/Body": "<p>@{outputs('Compose_links2')}</p>",
+                                  "emailMessage/Attachments": "@variables('varAttachment')",
+                                  "emailMessage/Importance": "Normal"
+                                },
+                                "authentication": "@parameters('$authentication')"
+                              }
+                            },
+                            "Compose_links": {
+                              "runAfter": {
+                                "Compose_body_line_Amendments": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "e59f8e31-1b4e-4d69-a60c-632417bdd3f7"
+                              },
+                              "type": "Compose",
+                              "inputs": "@replace(replace(outputs('Compose_body_line_Amendments'), '~trainingpage1~', variables('MRMSTrainingPageLink')),'~dashboardlink~',variables('dashboardlink'))"
+                            },
+                            "Compose_Send_To_data_2": {
+                              "runAfter": {
+                                "Compose_links2": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "38feb74b-f82c-4ff2-9442-b6df162b3b0b"
+                              },
+                              "type": "Compose",
+                              "inputs": "@items('Apply_to_each_email_items')?['Send_To']"
+                            },
+                            "Loop_and_get_groups_2": {
+                              "foreach": "@split(outputs('Compose_Send_To_data_2'), ';')",
+                              "actions": {
+                                "Condition_3": {
+                                  "actions": {
+                                    "HTTP_request_to_Get_SPGroups_2": {
+                                      "runAfter": {},
+                                      "metadata": {
+                                        "operationMetadataId": "091f72d4-a3cb-4f04-a1ff-2ce5f484287a"
+                                      },
+                                      "type": "OpenApiConnection",
+                                      "inputs": {
+                                        "host": {
+                                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                          "connectionName": "shared_sharepointonline_1",
+                                          "operationId": "HttpRequest"
+                                        },
+                                        "parameters": {
+                                          "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                          "parameters/method": "GET",
+                                          "parameters/uri": "_api/web/sitegroups/getbyname('@{trim(items('Loop_and_get_groups_2'))}')/users",
+                                          "parameters/headers": {
+                                            "Content-Type": "application/json;odata=nometadata",
+                                            "Accept": "application/json;odata=nometadata"
+                                          }
+                                        },
+                                        "authentication": "@parameters('$authentication')"
+                                      }
+                                    },
+                                    "Parse_JSON_SP_Groups_2": {
+                                      "runAfter": {
+                                        "HTTP_request_to_Get_SPGroups_2": [
+                                          "Succeeded"
+                                        ]
+                                      },
+                                      "metadata": {
+                                        "operationMetadataId": "92b3d030-951c-4f3d-b7b3-efb20e14d88e"
+                                      },
+                                      "type": "ParseJson",
+                                      "inputs": {
+                                        "content": "@body('HTTP_request_to_Get_SPGroups_2')",
+                                        "schema": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                  "Id": {
+                                                    "type": "integer"
+                                                  },
+                                                  "IsHiddenInUI": {
+                                                    "type": "boolean"
+                                                  },
+                                                  "LoginName": {
+                                                    "type": "string"
+                                                  },
+                                                  "Title": {
+                                                    "type": "string"
+                                                  },
+                                                  "PrincipalType": {
+                                                    "type": "integer"
+                                                  },
+                                                  "Email": {
+                                                    "type": "string"
+                                                  },
+                                                  "Expiration": {
+                                                    "type": "string"
+                                                  },
+                                                  "IsEmailAuthenticationGuestUser": {
+                                                    "type": "boolean"
+                                                  },
+                                                  "IsShareByEmailGuestUser": {
+                                                    "type": "boolean"
+                                                  },
+                                                  "IsSiteAdmin": {
+                                                    "type": "boolean"
+                                                  },
+                                                  "UserId": {},
+                                                  "UserPrincipalName": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "Id",
+                                                  "IsHiddenInUI",
+                                                  "LoginName",
+                                                  "Title",
+                                                  "PrincipalType",
+                                                  "Email",
+                                                  "Expiration",
+                                                  "IsEmailAuthenticationGuestUser",
+                                                  "IsShareByEmailGuestUser",
+                                                  "IsSiteAdmin",
+                                                  "UserId",
+                                                  "UserPrincipalName"
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "Apply_to_each_3": {
+                                      "foreach": "@body('Parse_JSON_SP_Groups_2')?['value']",
+                                      "actions": {
+                                        "Append_to_string_variable_2": {
+                                          "runAfter": {},
+                                          "metadata": {
+                                            "operationMetadataId": "3d054d3e-bb70-4917-944e-15b75ff7b680"
+                                          },
+                                          "type": "AppendToStringVariable",
+                                          "inputs": {
+                                            "name": "SPGroupUsers",
+                                            "value": "@concat(items('Apply_to_each_3')['Email'], ';')"
+                                          }
+                                        }
+                                      },
+                                      "runAfter": {
+                                        "Parse_JSON_SP_Groups_2": [
+                                          "Succeeded"
+                                        ]
+                                      },
+                                      "metadata": {
+                                        "operationMetadataId": "b6beb3d8-1517-4d79-9de7-55c958de5a6c"
+                                      },
+                                      "type": "Foreach"
+                                    }
+                                  },
+                                  "runAfter": {},
+                                  "expression": {
+                                    "greater": [
+                                      "@length(items('Loop_and_get_groups_2'))",
+                                      0
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "7ea07b9a-ca28-4b2d-b752-1bc40093de22"
+                                  },
+                                  "type": "If"
+                                }
+                              },
+                              "runAfter": {
+                                "Compose_Send_To_data_2": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "26987d93-85b3-46ae-8805-545f29532c78"
+                              },
+                              "type": "Foreach"
+                            },
+                            "Set_empty_variable_spgroupusers": {
+                              "runAfter": {
+                                "Send_an_email_to_OHCHR_and_General": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "fa650542-cfa2-42f2-82e6-9c5377d95ebf"
+                              },
+                              "type": "SetVariable",
+                              "inputs": {
+                                "name": "SPGroupUsers",
+                                "value": "@variables('EmptyString')"
+                              }
+                            },
+                            "Condition_to_check_amendments_in_body_of_mail": {
+                              "actions": {
+                                "Append_to_string_variable_Amendment": {
+                                  "runAfter": {},
+                                  "metadata": {
+                                    "operationMetadataId": "116e207c-a05f-40ff-92ab-5bb690a65c86"
+                                  },
+                                  "type": "AppendToStringVariable",
+                                  "inputs": {
+                                    "name": "varAmendment",
+                                    "value": "@triggerBody()?['GeneralAmendments']"
+                                  }
+                                }
+                              },
+                              "runAfter": {
+                                "Compose_body_line_DraftResolution": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "else": {
+                                "actions": {
+                                  "Append_to_string_variable_Amendments": {
+                                    "runAfter": {},
+                                    "metadata": {
+                                      "operationMetadataId": "595cea1e-c6ad-44a8-9b08-36e21def66df"
+                                    },
+                                    "type": "AppendToStringVariable",
+                                    "inputs": {
+                                      "name": "varAmendment",
+                                      "value": "@triggerBody()?['Amendments']"
+                                    }
+                                  }
+                                }
+                              },
+                              "expression": {
+                                "equals": [
+                                  "@items('Apply_to_each_email_items')?['EmailType']",
+                                  "General"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "7cbb3403-22fd-483e-9104-d68243d4d252"
+                              },
+                              "type": "If"
+                            },
+                            "Compose_body_line_Amendments": {
+                              "runAfter": {
+                                "Condition_to_check_amendments_in_body_of_mail": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "b3708041-4f37-4b0b-9e10-367b5b8d86e8"
+                              },
+                              "type": "Compose",
+                              "inputs": "@replace(outputs('Compose_body_line_DraftResolution'), '~Amendments~', string(variables('varAmendment')))"
+                            },
+                            "Set_empty_variable_amendment": {
+                              "runAfter": {
+                                "Set_empty_variable_spgroupusers": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "afc62120-aaa1-4ca5-b644-64f202b641d3"
+                              },
+                              "type": "SetVariable",
+                              "inputs": {
+                                "name": "varAmendment",
+                                "value": "@variables('EmptyString')"
+                              }
+                            },
+                            "Compose_links2": {
+                              "runAfter": {
+                                "Compose_links": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "d5cb67e5-e9c6-4857-9469-973609f74e16"
+                              },
+                              "type": "Compose",
+                              "inputs": "@replace(outputs('Compose_links'), '~trainingpage2~',variables('MRMSTrainingPageLink2'))"
+                            }
+                          },
+                          "runAfter": {
+                            "Condition_to_check_attachments_length": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "ebee5533-c6eb-4a71-8f91-4783f3bcb891"
+                          },
+                          "type": "Foreach"
+                        },
+                        "Condition_to_check_attachments_length": {
+                          "actions": {
+                            "Apply_to_each_Attachments": {
+                              "foreach": "@triggerBody()?['Attachments']",
+                              "actions": {
+                                "Append_to_array_variable": {
+                                  "runAfter": {},
+                                  "metadata": {
+                                    "operationMetadataId": "5e6042fc-53f8-439e-8b81-31f7e96e1c51"
+                                  },
+                                  "type": "AppendToArrayVariable",
+                                  "inputs": {
+                                    "name": "varAttachment",
+                                    "value": "@items('Apply_to_each_Attachments')"
+                                  }
+                                }
+                              },
+                              "runAfter": {},
+                              "metadata": {
+                                "operationMetadataId": "7d0800c2-8279-471e-a6ff-87457bb3078d"
+                              },
+                              "type": "Foreach"
+                            }
+                          },
+                          "runAfter": {},
+                          "else": {
+                            "actions": {
+                              "Set_empty_attachment": {
+                                "runAfter": {},
+                                "metadata": {
+                                  "operationMetadataId": "65c71e44-2481-4d7b-a319-8375d206946d"
+                                },
+                                "type": "SetVariable",
+                                "inputs": {
+                                  "name": "varAttachment",
+                                  "value": "@variables('EmptyArray')"
+                                }
+                              }
+                            }
+                          },
+                          "expression": {
+                            "greater": [
+                              "@length(triggerOutputs()['Body']?['Attachments'])",
+                              0
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "994ea8f1-eeb3-43d2-827d-9328c2ed850a"
+                          },
+                          "type": "If"
+                        }
+                      },
+                      "runAfter": {},
+                      "expression": {
+                        "greater": [
+                          "@length(outputs('HTTP_request_to_GetItems')?['body/value'])",
+                          0
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "43730667-509b-48a7-95c4-9201c63f5040"
+                      },
+                      "type": "If"
+                    }
+                  }
+                },
+                "Case_General": {
+                  "case": "General",
+                  "actions": {
+                    "Compose_general_subject_line": {
+                      "runAfter": {
+                        "Append_to_string_variable_for_subject_line_resolutions": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "a0873aa2-6dce-4c49-875e-5ef58f157717"
+                      },
+                      "type": "Compose",
+                      "inputs": "@replace(replace(body('Parse_JSON_4')?['value'][0]?['Title'], '{DraftResNosSingleLine}', string(substring(variables('ShortendResolution'),0, sub(length(variables('ShortendResolution')),1)))),'{SessionSymbol}',triggerOutputs()['headers']?['SessionSymbol'])"
+                    },
+                    "Compose_general_body_line": {
+                      "runAfter": {
+                        "Compose_general_subject_line": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "99933b62-85f5-4877-b321-e111ac1cb7d0"
+                      },
+                      "type": "Compose",
+                      "inputs": "@replace(replace(body('Parse_JSON_4')?['value'][0]?['EN_Body'], '~DraftResNosMultiLine~', variables('varAmendment')),'~SessionSymbol~',triggerOutputs()['headers']?['SessionSymbol'])"
+                    },
+                    "Compose_3": {
+                      "runAfter": {
+                        "Compose_general_body_line": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "2e6f8c5c-a34e-48ee-a0b0-c297374b9b59"
+                      },
+                      "type": "Compose",
+                      "inputs": "@replace(outputs('Compose_general_body_line'), '~here~', variables('dashboardlink'))"
+                    },
+                    "Send_an_email_General": {
+                      "runAfter": {
+                        "Compose_3": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "6ee4e783-e75f-4432-9e5f-16bdc2cd8a20"
+                      },
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                          "connectionName": "shared_office365",
+                          "operationId": "SharedMailboxSendEmailV2"
+                        },
+                        "parameters": {
+                          "emailMessage/MailboxAddress": "mrms-uat@un.org",
+                          "emailMessage/To": "@variables('SPGroupUsers')",
+                          "emailMessage/Subject": "@outputs('Compose_general_subject_line')",
+                          "emailMessage/Body": "<p>@{outputs('Compose_3')}</p>",
+                          "emailMessage/Importance": "Normal"
+                        },
+                        "authentication": "@parameters('$authentication')"
+                      }
+                    },
+                    "Append_to_string_variable_for_body_line_resolutions": {
+                      "runAfter": {},
+                      "metadata": {
+                        "operationMetadataId": "480ec060-6b1b-4390-8db7-26fd49b84e56"
+                      },
+                      "type": "AppendToStringVariable",
+                      "inputs": {
+                        "name": "varAmendment",
+                        "value": "@triggerBody()?['Amendments']"
+                      }
+                    },
+                    "Append_to_string_variable_for_subject_line_resolutions": {
+                      "runAfter": {
+                        "Append_to_string_variable_for_body_line_resolutions": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "151284fe-d96f-4b34-935a-58aea59fb6dc"
+                      },
+                      "type": "AppendToStringVariable",
+                      "inputs": {
+                        "name": "ShortendResolution",
+                        "value": "@triggerOutputs()['headers']?['ShortResolutionSline']"
+                      }
+                    }
+                  }
+                }
+              },
+              "default": {
+                "actions": {}
+              },
+              "expression": "@triggerOutputs()['headers']?['Action']",
+              "metadata": {
+                "operationMetadataId": "f6a4b2db-3438-4b2f-b2fc-30a795197f69"
+              },
+              "type": "Switch"
+            },
+            "HTTP_request_to_GetItems": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "091f72d4-a3cb-4f04-a1ff-2ce5f484287a"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "connectionName": "shared_sharepointonline_1",
+                  "operationId": "HttpRequest"
+                },
+                "parameters": {
+                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                  "parameters/method": "GET",
+                  "parameters/uri": "/_api/Web/lists/GetByTitle('EmailTemplatesHRC')/items?$select=Title,EN_Body,EmailType,WFScenario,Send_To&$filter=EmailOccurence eq '@{triggerOutputs()['headers']?['FilterEmailOccurence']}' and WFScenario eq '@{triggerOutputs()['headers']?['FilterWFScenario']}'",
+                  "parameters/headers": {
+                    "Content-Type": "application/json;odata=nometadata",
+                    "Accept": "application/json;odata=nometadata"
+                  }
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Parse_JSON_4": {
+              "runAfter": {
+                "HTTP_request_to_GetItems": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "47c0cf29-c6d9-45db-be5e-4c5c97dacd6f"
+              },
+              "type": "ParseJson",
+              "inputs": {
+                "content": "@body('HTTP_request_to_GetItems')",
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Title": {
+                            "type": "string"
+                          },
+                          "WFScenario": {
+                            "type": "string"
+                          },
+                          "EN_Body": {
+                            "type": "string"
+                          },
+                          "Send_To": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "Title",
+                          "WFScenario",
+                          "EN_Body",
+                          "Send_To"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "Condition_to_check_action": {
+              "actions": {
+                "Apply_to_each_for_Send_To": {
+                  "foreach": "@body('Parse_JSON_4')?['value']",
+                  "actions": {
+                    "Compose_Send_To_data": {
+                      "runAfter": {},
+                      "metadata": {
+                        "operationMetadataId": "38feb74b-f82c-4ff2-9442-b6df162b3b0b"
+                      },
+                      "type": "Compose",
+                      "inputs": "@items('Apply_to_each_for_Send_To')?['Send_To']"
+                    },
+                    "Loop_and_get_groups": {
+                      "foreach": "@split(outputs('Compose_Send_To_data'), ';')",
+                      "actions": {
+                        "Condition": {
+                          "actions": {
+                            "HTTP_request_to_Get_SPGroups": {
+                              "runAfter": {},
+                              "metadata": {
+                                "operationMetadataId": "091f72d4-a3cb-4f04-a1ff-2ce5f484287a"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "connectionName": "shared_sharepointonline_1",
+                                  "operationId": "HttpRequest"
+                                },
+                                "parameters": {
+                                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                                  "parameters/method": "GET",
+                                  "parameters/uri": "_api/web/sitegroups/getbyname('@{trim(items('Loop_and_get_groups'))}')/users",
+                                  "parameters/headers": {
+                                    "Content-Type": "application/json;odata=nometadata",
+                                    "Accept": "application/json;odata=nometadata"
+                                  }
+                                },
+                                "authentication": "@parameters('$authentication')"
+                              }
+                            },
+                            "Parse_JSON_SP_Groups": {
+                              "runAfter": {
+                                "HTTP_request_to_Get_SPGroups": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "92b3d030-951c-4f3d-b7b3-efb20e14d88e"
+                              },
+                              "type": "ParseJson",
+                              "inputs": {
+                                "content": "@body('HTTP_request_to_Get_SPGroups')",
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "Id": {
+                                            "type": "integer"
+                                          },
+                                          "IsHiddenInUI": {
+                                            "type": "boolean"
+                                          },
+                                          "LoginName": {
+                                            "type": "string"
+                                          },
+                                          "Title": {
+                                            "type": "string"
+                                          },
+                                          "PrincipalType": {
+                                            "type": "integer"
+                                          },
+                                          "Email": {
+                                            "type": "string"
+                                          },
+                                          "Expiration": {
+                                            "type": "string"
+                                          },
+                                          "IsEmailAuthenticationGuestUser": {
+                                            "type": "boolean"
+                                          },
+                                          "IsShareByEmailGuestUser": {
+                                            "type": "boolean"
+                                          },
+                                          "IsSiteAdmin": {
+                                            "type": "boolean"
+                                          },
+                                          "UserId": {},
+                                          "UserPrincipalName": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "Id",
+                                          "IsHiddenInUI",
+                                          "LoginName",
+                                          "Title",
+                                          "PrincipalType",
+                                          "Email",
+                                          "Expiration",
+                                          "IsEmailAuthenticationGuestUser",
+                                          "IsShareByEmailGuestUser",
+                                          "IsSiteAdmin",
+                                          "UserId",
+                                          "UserPrincipalName"
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "Apply_to_each": {
+                              "foreach": "@body('Parse_JSON_SP_Groups')?['value']",
+                              "actions": {
+                                "Append_to_string_variable": {
+                                  "runAfter": {},
+                                  "metadata": {
+                                    "operationMetadataId": "3d054d3e-bb70-4917-944e-15b75ff7b680"
+                                  },
+                                  "type": "AppendToStringVariable",
+                                  "inputs": {
+                                    "name": "SPGroupUsers",
+                                    "value": "@concat(items('Apply_to_each')['Email'], ';')"
+                                  }
+                                }
+                              },
+                              "runAfter": {
+                                "Parse_JSON_SP_Groups": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "b6beb3d8-1517-4d79-9de7-55c958de5a6c"
+                              },
+                              "type": "Foreach"
+                            }
+                          },
+                          "runAfter": {},
+                          "expression": {
+                            "greater": [
+                              "@length(items('Loop_and_get_groups'))",
+                              0
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "7ea07b9a-ca28-4b2d-b752-1bc40093de22"
+                          },
+                          "type": "If"
+                        }
+                      },
+                      "runAfter": {
+                        "Compose_Send_To_data": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "26987d93-85b3-46ae-8805-545f29532c78"
+                      },
+                      "type": "Foreach"
+                    }
+                  },
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "87e2a147-0ae2-4b96-974b-b9e66b652cb7"
+                  },
+                  "type": "Foreach"
+                }
+              },
+              "runAfter": {
+                "Parse_JSON_4": [
+                  "Succeeded"
+                ]
+              },
+              "expression": {
+                "not": {
+                  "equals": [
+                    "@triggerOutputs()['headers']?['Action']",
+                    "OHCHRandGeneric"
+                  ]
+                }
+              },
+              "metadata": {
+                "operationMetadataId": "01d6208b-6aa1-4572-8fd1-7d77cbeb5cac"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "Set_variable_OriginalDraftResolution": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d00c0199-70c3-4ade-ba31-b4fd20178940"
+          },
+          "type": "Scope"
+        },
+        "Initialize_variable_comments": {
+          "runAfter": {
+            "Initialize_variable_EmptyString": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d280ae34-a74f-440a-967c-51bdf21ebb6a"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "currComments",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_MRMSTrainingPageLink": {
+          "runAfter": {
+            "Initialize_variable_Dashboard_link": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "679a2ee3-c32e-43ac-b78c-bf3641557c5b"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "MRMSTrainingPageLink",
+                "type": "string",
+                "value": "<a href='https://unitednations.sharepoint.com/:b:/r/sites/APP-STAGING-MRMS-MGT_DEV/Shared%20Documents/User%20Guide%20-%20Written%20Amendments%20containing%20changes.pdf?csf=1&web=1&e=3dqZ92'>here</a>"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_EmptyString": {
+          "runAfter": {
+            "Initialize_variable_EmptyArray": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "000e26ca-8c7e-4c89-b28e-6c001e9f8338"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "EmptyString",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_MRMSTrainingPageLink_2": {
+          "runAfter": {
+            "Initialize_variable_MRMSTrainingPageLink": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "679a2ee3-c32e-43ac-b78c-bf3641557c5b"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "MRMSTrainingPageLink2",
+                "type": "string",
+                "value": "<a href='https://unitednations.sharepoint.com/:b:/r/sites/APP-STAGING-MRMS-MGT_DEV/Shared%20Documents/User%20Guide%20-%20Written%20Amendments%20without%20changes.pdf?csf=1&web=1&e=MEUWZH'>here</a>"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_MMSapprovername": {
+          "runAfter": {
+            "Initialize_variable_comments": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "97da2602-71a9-46f4-8fad-67b519880f18"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "MMSapprovername",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

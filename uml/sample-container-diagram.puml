@@ -1,0 +1,34 @@
+@startuml Container Diagram
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Container Diagram - MRMS System
+
+Person(user, "User", "A user of the MRMS system")
+Person_Ext(admin, "Administrator", "System administrator")
+
+System_Boundary(mrms, "MRMS") {
+    Container(webApp, "Web Application", "React", "Provides the UI for users to interact with the system")
+    Container(apiGateway, "API Gateway", "Node.js / Express", "Handles routing and authentication")
+    Container(backendService, "Backend Service", "Java / Spring Boot", "Core business logic and data processing")
+    ContainerDb(database, "Database", "PostgreSQL", "Stores application data")
+    Container(messageQueue, "Message Queue", "RabbitMQ", "Handles async communication between services")
+    Container(cacheStore, "Cache", "Redis", "Stores session and frequently accessed data")
+}
+
+System_Ext(emailSystem, "Email System", "External email service (e.g. SendGrid)")
+System_Ext(authProvider, "Auth Provider", "External identity provider (e.g. Azure AD)")
+
+Rel(user, webApp, "Uses", "HTTPS")
+Rel(admin, webApp, "Manages", "HTTPS")
+Rel(webApp, apiGateway, "API calls", "HTTPS / REST")
+Rel(apiGateway, authProvider, "Authenticates via", "OAuth 2.0")
+Rel(apiGateway, backendService, "Routes requests", "HTTP / REST")
+Rel(backendService, database, "Reads/Writes", "JDBC")
+Rel(backendService, cacheStore, "Reads/Writes", "Redis Protocol")
+Rel(backendService, messageQueue, "Publishes/Subscribes", "AMQP")
+Rel(backendService, emailSystem, "Sends emails", "SMTP")
+
+@enduml

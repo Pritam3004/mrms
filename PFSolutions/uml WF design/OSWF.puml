@@ -1,0 +1,41 @@
+@startuml Oral Statement Generation and Approval
+skinparam sequenceArrowThickness 1.5
+skinparam roundcorner 8
+skinparam sequenceParticipantBorderColor #534AB7
+skinparam sequenceParticipantBackgroundColor #EEEDFE
+skinparam sequenceParticipantFontColor #3C3489
+skinparam sequenceArrowColor #534AB7
+skinparam noteBorderColor #1D9E75
+skinparam noteBackgroundColor #E1F5EE
+
+title Oral Statement Generation & Approval
+
+actor "User" as user
+participant "SPFx Web Part" as spfx
+participant "Azure Functions" as af
+participant "SharePoint\nLists & Libraries" as sp
+participant "Power Automate" as pa
+actor "PBI Focal Point" as fp
+actor "Finance Review" as finance
+actor "PPBD FBO" as fbo
+actor "PPBD" as ppbd
+
+user -> spfx : Request Oral Statement\ngeneration
+spfx -> af : POST resolution\nmetadata (JSON)
+af -> sp : Read CostRates
+sp -> af : Return CostRates data
+af -> af : Generate OS (.docx)
+af -> sp : Upload .docx to\nResolution Document Set
+af -> spfx : Return success
+
+group Approval — returnable at each stage to any previous stage
+  pa -> fp : Notify and review         
+  fp -> finance : Notify and review
+  finance -> fbo : Notify and review
+  fbo -> ppbd : Notify and review
+  ppbd -> ppbd: Final Approve and pdf generation
+
+  
+
+end
+@enduml

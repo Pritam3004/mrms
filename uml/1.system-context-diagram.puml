@@ -1,0 +1,37 @@
+@startuml SystemContext
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_TOP_DOWN()
+SHOW_PERSON_OUTLINE()
+
+AddElementTag("entra", $bgColor="#000000", $fontColor="#ffffff", $borderColor="#000000")
+
+title MRMS - C4 Level 1: System Context
+
+'---- People ----
+Person(users, "Users (Browser)", "Staff who enter, review, and approve\nresolutions and mandates via browser.")
+Person(roles, "Administrator (Browser)", "Manages SharePoint group-based\npermission roles.")
+Person(userEmail, "Users (Email)", "Sends Email with documents to MRMS.")
+
+'---- Core System ----
+System(mrms, "MRMS", "Mandate Review Management System.\nHosted on UN Microsoft 365 (SharePoint Online + Power Automate + Azure Functions).\nManages the full resolution lifecycle: ingestion, data entry, approval, and reporting.")
+
+'---- External Systems ----
+System_Ext(entraID, "UN Entra ID", "Authentication\nfor MRMS users", $tags="entra")
+System_Ext(outlook, "Outlook", "Mailbox mrms@un.org.\nEmail ingestion for incoming resolutions.")
+System_Ext(docUN, "documents.un.org", "Source for adopted resolution documents.")
+System_Ext(powerBI, "Power BI", "Reporting and analytics\nover mandate data.")
+
+'---- Relationships ----
+Rel_D(users, entraID, "Authenticates")
+Rel_U(roles, entraID, "Authenticates")
+Rel_D(users, mrms, "Interacts")
+Rel_U(roles, mrms, "Configures permissions")
+Rel_U(userEmail, outlook, "Email with formatted subject")
+Rel_D(mrms, outlook, "Monitors mailbox with SafeList filter", "PULL/Power Automate trigger")
+Rel_D(mrms, docUN, "Fetches resolution documents", "PULL / Adopted Resolution docx")
+
+Rel_U(powerBI, mrms, "Reads data", "PULL/Mandates, Resolutions, PBIs")
+
+SHOW_LEGEND()
+@enduml

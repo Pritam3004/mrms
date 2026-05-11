@@ -1,0 +1,585 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedsharepointonline_63e53"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      },
+      "shared_office365": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedoffice365_4aca4"
+        },
+        "api": {
+          "name": "shared_office365"
+        }
+      },
+      "shared_sharepointonline_1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedsharepointonline_e8f69"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "When_an_item_is_created_or_modified": {
+          "recurrence": {
+            "frequency": "Minute",
+            "interval": 1
+          },
+          "evaluatedRecurrence": {
+            "frequency": "Minute",
+            "interval": 1
+          },
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "metadata": {
+            "operationMetadataId": "56d1a57e-a359-4d2f-9050-8e9c21eb4b1a"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "connectionName": "shared_sharepointonline",
+              "operationId": "GetOnUpdatedItems"
+            },
+            "parameters": {
+              "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+              "table": "7c4c1888-fc2a-4d4e-99a5-0e0a9a73f18f"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "actions": {
+        "Try": {
+          "actions": {
+            "Add_User_to_Visitor_Group": {
+              "runAfter": {
+                "Apply_to_each_for_Adding_User_to_Groups": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "bc16e9e9-19b4-4100-b5bb-4ab829eabf60"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "connectionName": "shared_sharepointonline",
+                  "operationId": "HttpRequest"
+                },
+                "parameters": {
+                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                  "parameters/method": "POST",
+                  "parameters/uri": "_api/web/SiteGroups/GetByName('DCM EO STAGING-MRMS-MGT Visitors')/Users",
+                  "parameters/headers": {
+                    "Accept": "application/json;odata=verbose;"
+                  },
+                  "parameters/body": "{\n\"LoginName\":\"i:0#.f|membership|@{triggerOutputs()?['body/UNEmail']}\"\n}"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Apply_to_each_for_Removing_User_from_Groups": {
+              "foreach": "@body('Get_UserGroups')?['d']?['results']",
+              "actions": {
+                "Parse_JSON": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "47c9f362-3c10-48f8-8d9c-ea4569c69096"
+                  },
+                  "type": "ParseJson",
+                  "inputs": {
+                    "content": "@items('Apply_to_each_for_Removing_User_from_Groups')",
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "__metadata": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "uri": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "Owner": {
+                          "type": "object",
+                          "properties": {
+                            "__deferred": {
+                              "type": "object",
+                              "properties": {
+                                "uri": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "Users": {
+                          "type": "object",
+                          "properties": {
+                            "__deferred": {
+                              "type": "object",
+                              "properties": {
+                                "uri": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "Id": {
+                          "type": "integer"
+                        },
+                        "IsHiddenInUI": {
+                          "type": "boolean"
+                        },
+                        "LoginName": {
+                          "type": "string"
+                        },
+                        "Title": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "PrincipalType": {
+                          "type": "integer"
+                        },
+                        "AllowMembersEditMembership": {
+                          "type": "boolean"
+                        },
+                        "AllowRequestToJoinLeave": {
+                          "type": "boolean"
+                        },
+                        "AutoAcceptRequestToJoinLeave": {
+                          "type": "boolean"
+                        },
+                        "Description": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "OnlyAllowMembersViewMembership": {
+                          "type": "boolean"
+                        },
+                        "OwnerTitle": {
+                          "type": "string"
+                        },
+                        "RequestToJoinLeaveEmailSetting": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "Remove_User_From_Group": {
+                  "runAfter": {
+                    "Parse_JSON": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "5cb75d98-5b85-4b2f-8b01-87c5bc8c2755"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "connectionName": "shared_sharepointonline",
+                      "operationId": "HttpRequest"
+                    },
+                    "parameters": {
+                      "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                      "parameters/method": "POST",
+                      "parameters/uri": "_api/Web/SiteGroups(@{body('Parse_JSON')?['Id']})/Users/RemoveByID(@{variables('VarUserID')})",
+                      "parameters/headers": {
+                        "Accept": "application/json;odata=verbose;"
+                      }
+                    },
+                    "authentication": "@parameters('$authentication')"
+                  }
+                }
+              },
+              "runAfter": {
+                "Get_UserGroups": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "6e7fe83c-1faf-48b5-a179-c617d620424d"
+              },
+              "type": "Foreach"
+            },
+            "Get_UserGroups": {
+              "runAfter": {
+                "Check_if_user_is_present": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "87d20f93-e3d1-4cfe-91a4-ef7efeb839ef"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "connectionName": "shared_sharepointonline",
+                  "operationId": "HttpRequest"
+                },
+                "parameters": {
+                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                  "parameters/method": "GET",
+                  "parameters/uri": "/_api/web/GetUserById(@{variables('VarUserID')})/Groups",
+                  "parameters/headers": {
+                    "Accept": "application/json;odata=verbose;"
+                  }
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Check_if_user_is_present": {
+              "actions": {
+                "Add_User_to_Visitor_Group_2": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "bc16e9e9-19b4-4100-b5bb-4ab829eabf60"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "connectionName": "shared_sharepointonline",
+                      "operationId": "HttpRequest"
+                    },
+                    "parameters": {
+                      "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                      "parameters/method": "POST",
+                      "parameters/uri": "_api/web/SiteGroups/GetByName('DCM EO STAGING-MRMS-MGT Visitors')/Users",
+                      "parameters/headers": {
+                        "Accept": "application/json;odata=verbose;"
+                      },
+                      "parameters/body": "{\n\"LoginName\":\"i:0#.f|membership|@{triggerOutputs()?['body/UNEmail']}\"\n}"
+                    },
+                    "authentication": "@parameters('$authentication')"
+                  }
+                },
+                "Parse_JSON_3": {
+                  "runAfter": {
+                    "Add_User_to_Visitor_Group_2": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "8e5cc832-69e3-477c-8f79-33f3d97a624d"
+                  },
+                  "type": "ParseJson",
+                  "inputs": {
+                    "content": "@body('Add_User_to_Visitor_Group_2')",
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "d": {
+                          "type": "object",
+                          "properties": {
+                            "Id": {
+                              "type": "integer"
+                            },
+                            "LoginName": {
+                              "type": "string"
+                            },
+                            "Title": {
+                              "type": "string"
+                            },
+                            "PrincipalType": {
+                              "type": "integer"
+                            },
+                            "Email": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "Set_variable": {
+                  "runAfter": {
+                    "Parse_JSON_3": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "944fb3f2-aa8c-42d8-88ac-2115b58f434d"
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "VarUserID",
+                    "value": "@{body('Parse_JSON_3')?['d']?['Id']}"
+                  }
+                }
+              },
+              "runAfter": {
+                "Parse_JSON_2": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Set_variable_3": {
+                    "runAfter": {},
+                    "metadata": {
+                      "operationMetadataId": "23e7aa23-d643-46e2-846b-f4cfed7afda3"
+                    },
+                    "type": "SetVariable",
+                    "inputs": {
+                      "name": "VarUserID",
+                      "value": "@{body('Parse_JSON_2')?['d']?['results'][0]?['id']}"
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "equals": [
+                  "@empty(body('Parse_JSON_2')?['d']?['results'])",
+                  "@true"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "dd8906fc-c063-4c8e-aad4-ae2637dbd0b0"
+              },
+              "type": "If"
+            },
+            "Parse_JSON_2": {
+              "runAfter": {
+                "Get_UserID": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "c49c7990-a4cc-473e-ad57-2b00a94bbcee"
+              },
+              "type": "ParseJson",
+              "inputs": {
+                "content": "@body('Get_UserID')",
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "d": {
+                      "type": "object",
+                      "properties": {
+                        "Id": {
+                          "type": "integer"
+                        },
+                        "LoginName": {
+                          "type": "string"
+                        },
+                        "Title": {
+                          "type": "string"
+                        },
+                        "PrincipalType": {
+                          "type": "integer"
+                        },
+                        "Email": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "Get_UserID": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "d9b59e90-6df3-4f15-ad19-a4e3b6444f09"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "connectionName": "shared_sharepointonline",
+                  "operationId": "HttpRequest"
+                },
+                "parameters": {
+                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                  "parameters/method": "GET",
+                  "parameters/uri": "/_api/web/SiteUserInfoList/items?$filter=UserName eq '@{triggerOutputs()?['body/UNEmail']}'"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Apply_to_each_for_Adding_User_to_Groups": {
+              "foreach": "@triggerOutputs()?['body/Groups']",
+              "actions": {
+                "Add_User_to_SPGroup": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "bc16e9e9-19b4-4100-b5bb-4ab829eabf60"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "connectionName": "shared_sharepointonline",
+                      "operationId": "HttpRequest"
+                    },
+                    "parameters": {
+                      "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                      "parameters/method": "POST",
+                      "parameters/uri": "_api/web/SiteGroups/GetByName('@{items('Apply_to_each_for_Adding_User_to_Groups')?['Value']}')/Users",
+                      "parameters/headers": {
+                        "Accept": "application/json;odata=verbose;"
+                      },
+                      "parameters/body": "{\n\"LoginName\":\"i:0#.f|membership|@{triggerOutputs()?['body/UNEmail']}\"\n}"
+                    },
+                    "authentication": "@parameters('$authentication')"
+                  }
+                }
+              },
+              "runAfter": {
+                "Apply_to_each_for_Removing_User_from_Groups": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "71bec211-ad4d-4096-b59c-578b2ebb4c94"
+              },
+              "type": "Foreach"
+            }
+          },
+          "runAfter": {
+            "Initialize_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "aa33cc94-483e-4a6d-a29a-92df170a3da1"
+          },
+          "type": "Scope"
+        },
+        "Catch": {
+          "actions": {
+            "Terminate": {
+              "runAfter": {
+                "Send_an_email_(V2)": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "1f731da7-b40a-43c2-93f8-842a764f95cc"
+              },
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Failed"
+              }
+            },
+            "Delete_item": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "7bd0542e-3c2e-45b0-9f30-8bb6ecaa0fd1"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "connectionName": "shared_sharepointonline_1",
+                  "operationId": "DeleteItem"
+                },
+                "parameters": {
+                  "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+                  "table": "7c4c1888-fc2a-4d4e-99a5-0e0a9a73f18f",
+                  "id": "@triggerOutputs()?['body/ID']"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Send_an_email_(V2)": {
+              "runAfter": {
+                "Delete_item": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "45325c18-4704-4623-b616-5b69f8aa4067"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                  "connectionName": "shared_office365",
+                  "operationId": "SendEmailV2"
+                },
+                "parameters": {
+                  "emailMessage/To": "alexandros.hoc@un.org",
+                  "emailMessage/Subject": "Flow failure: STAGING - UserPermissionWF",
+                  "emailMessage/Body": "<p>Dear Alex,<br>\n<br>\nPlease note that the flow has failed for the below user.<br>\n<br>\n@{triggerOutputs()?['body/UNEmail']}<br>\n<br>\nBest regards,<br>\nMRMS System</p>",
+                  "emailMessage/Importance": "Normal"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            }
+          },
+          "runAfter": {
+            "Try": [
+              "Failed"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "5831b00f-4ee5-419e-ba24-d987c8e3568d"
+          },
+          "type": "Scope"
+        },
+        "Initialize_variable": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "00df2adf-42c1-4faf-9a5b-cad6fe3a5a28"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "VarUserID",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

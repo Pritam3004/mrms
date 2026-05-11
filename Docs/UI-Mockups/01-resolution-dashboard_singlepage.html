@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MRMS — Resolution Dashboard (UI Mockup v1)</title>
+
+  <!-- Google Fonts: Source Sans 3 (UN-adjacent, clean) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ===================================================================
+       MRMS DESIGN SYSTEM — UN BRANDING TOKENS
+       Aligned to UN System Brand Guidelines (digital)
+       WCAG 2.1 AA compliant contrast ratios
+    =================================================================== */
+    :root {
+      /* --- Brand Palette --- */
+      --un-blue-900:   #0A2240;   /* Deep navy — headers, sidebar */
+      --un-blue-700:   #1A4A7C;   /* Dark blue — secondary nav, hover */
+      --un-blue-500:   #009EDB;   /* UN Cerulean — primary actions, links */
+      --un-blue-300:   #4FC3F7;   /* Sky blue — highlights */
+      --un-blue-100:   #E1F4FB;   /* Pale blue — tinted backgrounds */
+
+      --un-gold:       #C89520;   /* UN gold accent */
+      --un-gold-light: #FFF3CD;   /* Warm alert backgrounds */
+
+      /* --- Neutral Palette --- */
+      --gray-900:  #1A1A1A;
+      --gray-700:  #424242;
+      --gray-500:  #757575;
+      --gray-300:  #BDBDBD;
+      --gray-100:  #F5F5F5;
+      --gray-50:   #FAFAFA;
+      --white:     #FFFFFF;
+
+      /* --- Semantic Colours --- */
+      --status-approved:  #1B7A3E;  /* Green — WCAG AA on white */
+      --status-approved-bg: #E8F5ED;
+      --status-pending:   #B35A00;  /* Amber — WCAG AA */
+      --status-pending-bg: #FFF0E0;
+      --status-draft:     #1A4A7C;
+      --status-draft-bg:  #E6EEF8;
+      --status-review:    #6B3FA0;
+      --status-review-bg: #F3EEF9;
+      --status-rejected:  #B71C1C;
+      --status-rejected-bg: #FDECEA;
+
+      /* --- Typography --- */
+      --font-family:  'Source Sans 3', 'Segoe UI', Arial, sans-serif;
+      --font-size-xs: 0.75rem;   /* 12px */
+      --font-size-sm: 0.875rem;  /* 14px */
+      --font-size-md: 1rem;      /* 16px */
+      --font-size-lg: 1.125rem;  /* 18px */
+      --font-size-xl: 1.25rem;   /* 20px */
+      --font-size-2xl:1.5rem;    /* 24px */
+      --font-size-3xl:2rem;      /* 32px */
+
+      /* --- Spacing (4-pt grid) --- */
+      --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px;  --sp-4: 16px;
+      --sp-5: 20px; --sp-6: 24px; --sp-8: 32px;  --sp-10: 40px;
+
+      /* --- Elevation --- */
+      --shadow-sm:  0 1px 3px rgba(0,0,0,.10);
+      --shadow-md:  0 4px 12px rgba(0,0,0,.12);
+      --shadow-lg:  0 8px 24px rgba(0,0,0,.14);
+
+      /* --- Shape --- */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 100px;
+
+      /* --- Layout --- */
+      --sidebar-width: 240px;
+      --topbar-height: 56px;
+    }
+
+    /* ===================================================================
+       RESET & BASE
+    =================================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-family);
+      font-size: var(--font-size-md);
+      color: var(--gray-900);
+      background: var(--gray-50);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: var(--un-blue-500); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    button { cursor: pointer; font-family: inherit; }
+
+    /* ===================================================================
+       TOP NAVIGATION BAR
+    =================================================================== */
+    .topbar {
+      height: var(--topbar-height);
+      background: var(--un-blue-900);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--sp-6);
+      gap: var(--sp-4);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-md);
+    }
+    .topbar__logo {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      text-decoration: none;
+    }
+    .topbar__logo-emblem {
+      width: 36px;
+      height: 36px;
+      background: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .topbar__logo-emblem svg { width: 24px; height: 24px; }
+    .topbar__title {
+      color: var(--white);
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .topbar__title span {
+      color: var(--un-blue-300);
+      font-weight: 300;
+      font-size: var(--font-size-sm);
+      display: block;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .topbar__divider {
+      width: 1px;
+      height: 28px;
+      background: rgba(255,255,255,.2);
+      margin: 0 var(--sp-2);
+    }
+    .topbar__nav {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-1);
+      flex: 1;
+    }
+    .topbar__nav-link {
+      padding: var(--sp-2) var(--sp-3);
+      border-radius: var(--radius-sm);
+      color: rgba(255,255,255,.8);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      transition: background .15s, color .15s;
+      text-decoration: none;
+    }
+    .topbar__nav-link:hover { background: rgba(255,255,255,.1); color: var(--white); text-decoration: none; }
+    .topbar__nav-link.active {
+      background: var(--un-blue-500);
+      color: var(--white);
+    }
+    .topbar__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      margin-left: auto;
+    }
+    .topbar__search {
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: var(--radius-pill);
+      padding: var(--sp-1) var(--sp-3);
+      gap: var(--sp-2);
+      width: 220px;
+      transition: background .15s;
+    }
+    .topbar__search:focus-within {
+      background: rgba(255,255,255,.18);
+      border-color: var(--un-blue-300);
+    }
+    .topbar__search input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--white);
+      font-size: var(--font-size-sm);
+      font-family: inherit;
+      width: 100%;
+    }
+    .topbar__search input::placeholder { color: rgba(255,255,255,.5); }
+    .topbar__icon-btn {
+      width: 36px; height: 36px;
+      background: transparent;
+      border: none;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,.8);
+      transition: background .15s;
+      position: relative;
+    }
+    .topbar__icon-btn:hover { background: rgba(255,255,255,.1); color: var(--white); }
+    .notif-badge {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 8px; height: 8px;
+      background: #FF5252;
+      border-radius: 50%;
+      border: 1px solid var(--un-blue-900);
+    }
+    .topbar__avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--un-blue-500);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--white);
+      font-size: var(--font-size-sm);
+      font-weight: 700;
+      cursor: pointer;
+      border: 2px solid rgba(255,255,255,.3);
+    }
+
+    /* ===================================================================
+       APP LAYOUT
+    =================================================================== */
+    .app-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ===================================================================
+       LEFT SIDEBAR
+    =================================================================== */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--white);
+      border-right: 1px solid #E0E0E0;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+    .sidebar__section {
+      padding: var(--sp-4) var(--sp-3) var(--sp-2);
+    }
+    .sidebar__label {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0 var(--sp-2) var(--sp-2);
+    }
+    .sidebar__item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-2) var(--sp-3);
+      border-radius: var(--radius-sm);
+      color: var(--gray-700);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .12s, color .12s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      text-decoration: none;
+    }
+    .sidebar__item:hover { background: var(--gray-100); color: var(--gray-900); }
+    .sidebar__item.active {
+      background: var(--un-blue-100);
+      color: var(--un-blue-700);
+      font-weight: 600;
+    }
+    .sidebar__item .icon {
+      width: 20px; height: 20px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      opacity: .7;
+    }
+    .sidebar__item.active .icon { opacity: 1; }
+    .sidebar__badge {
+      margin-left: auto;
+      background: var(--un-blue-500);
+      color: var(--white);
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: var(--radius-pill);
+      min-width: 22px;
+      text-align: center;
+    }
+    .sidebar__badge.warn { background: var(--status-pending); }
+    .sidebar__divider {
+      height: 1px;
+      background: #E0E0E0;
+      margin: var(--sp-2) var(--sp-3);
+    }
+
+    /* ===================================================================
+       MAIN CONTENT
+    =================================================================== */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--sp-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-6);
+    }
+
+    /* ===================================================================
+       PAGE HEADER
+    =================================================================== */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sp-4);
+    }
+    .page-header__text { flex: 1; }
+    .page-header__breadcrumb {
+      font-size: var(--font-size-xs);
+      color: var(--gray-500);
+      margin-bottom: var(--sp-1);
+    }
+    .page-header__breadcrumb a { color: var(--gray-500); }
+    .page-header__breadcrumb a:hover { color: var(--un-blue-500); }
+    .page-header__title {
+      font-size: var(--font-size-2xl);
+      font-weight: 700;
+      color: var(--un-blue-900);
+      line-height: 1.2;
+    }
+    .page-header__subtitle {
+      font-size: var(--font-size-sm);
+      color: var(--gray-500);
+      margin-top: var(--sp-1);
+    }
+    .page-header__actions {
+      display: flex;
+      gap: var(--sp-3);
+      align-items: center;
+      margin-top: var(--sp-2);
+    }
+
+    /* ===================================================================
+       BUTTONS
+    =================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+      padding: var(--sp-2) var(--sp-4);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      font-family: inherit;
+      border: 1.5px solid transparent;
+      transition: all .15s;
+      text-decoration: none;
+      line-height: 1.4;
+    }
+    .btn:hover { text-decoration: none; }
+    .btn-primary {
+      background: var(--un-blue-500);
+      color: var(--white);
+      border-color: var(--un-blue-500);
+    }
+    .btn-primary:hover { background: var(--un-blue-700); border-color: var(--un-blue-700); }
+    .btn-secondary {
+      background: var(--white);
+      color: var(--un-blue-700);
+      border-color: #C2D4E8;
+    }
+    .btn-secondary:hover { background: var(--un-blue-100); border-color: var(--un-blue-500); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--gray-700);
+      border-color: transparent;
+    }
+    .btn-ghost:hover { background: var(--gray-100); }
+    .btn-sm { padding: var(--sp-1) var(--sp-3); font-size: var(--font-size-xs); }
+    .btn-icon { padding: var(--sp-2); border-radius: var(--radius-sm); }
+
+    /* ===================================================================
+       KPI CARDS ROW
+    =================================================================== */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--sp-4);
+    }
+    .kpi-card {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      padding: var(--sp-4) var(--sp-5);
+      border: 1px solid #E0E0E0;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .15s, transform .15s;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--un-blue-500);
+    }
+    .kpi-card.accent-gold::before  { background: var(--un-gold); }
+    .kpi-card.accent-green::before { background: var(--status-approved); }
+    .kpi-card.accent-amber::before { background: var(--status-pending); }
+    .kpi-card.accent-purple::before{ background: var(--status-review); }
+    .kpi-card__label {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: var(--sp-2);
+    }
+    .kpi-card__value {
+      font-size: var(--font-size-3xl);
+      font-weight: 700;
+      color: var(--un-blue-900);
+      line-height: 1;
+    }
+    .kpi-card__delta {
+      font-size: var(--font-size-xs);
+      color: var(--gray-500);
+      margin-top: var(--sp-1);
+    }
+    .kpi-card__delta.up { color: var(--status-approved); }
+    .kpi-card__delta.down { color: var(--status-rejected); }
+    .kpi-card__icon {
+      position: absolute;
+      right: var(--sp-4);
+      top: var(--sp-4);
+      width: 36px; height: 36px;
+      background: var(--un-blue-100);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--un-blue-500);
+    }
+    .kpi-card.accent-green .kpi-card__icon  { background: var(--status-approved-bg); color: var(--status-approved); }
+    .kpi-card.accent-amber .kpi-card__icon  { background: var(--status-pending-bg); color: var(--status-pending); }
+    .kpi-card.accent-purple .kpi-card__icon { background: var(--status-review-bg); color: var(--status-review); }
+    .kpi-card.accent-gold .kpi-card__icon   { background: var(--un-gold-light); color: var(--un-gold); }
+
+    /* ===================================================================
+       FILTER BAR
+    =================================================================== */
+    .filter-bar {
+      background: var(--white);
+      border: 1px solid #E0E0E0;
+      border-radius: var(--radius-md);
+      padding: var(--sp-4) var(--sp-5);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-4);
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-sm);
+    }
+    .filter-bar__label {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      white-space: nowrap;
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+    .filter-group__label {
+      font-size: var(--font-size-sm);
+      color: var(--gray-700);
+      white-space: nowrap;
+    }
+    .form-select, .form-input {
+      padding: var(--sp-2) var(--sp-3);
+      border: 1.5px solid #BDBDBD;
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-sm);
+      font-family: inherit;
+      color: var(--gray-900);
+      background: var(--white);
+      outline: none;
+      transition: border-color .15s;
+      height: 34px;
+    }
+    .form-select:focus, .form-input:focus { border-color: var(--un-blue-500); box-shadow: 0 0 0 3px rgba(0,158,219,.15); }
+    .form-select { padding-right: var(--sp-8); appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23757575' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+
+    .chip-group { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+    .chip {
+      padding: 3px var(--sp-3);
+      border-radius: var(--radius-pill);
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      border: 1.5px solid #BDBDBD;
+      background: var(--white);
+      color: var(--gray-700);
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .chip:hover, .chip.active { border-color: var(--un-blue-500); background: var(--un-blue-100); color: var(--un-blue-700); }
+    .chip.active-all { border-color: var(--un-blue-500); background: var(--un-blue-500); color: var(--white); }
+
+    /* ===================================================================
+       DATA TABLE CARD
+    =================================================================== */
+    .card {
+      background: var(--white);
+      border: 1px solid #E0E0E0;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      padding: var(--sp-4) var(--sp-5);
+      border-bottom: 1px solid #E0E0E0;
+      gap: var(--sp-3);
+    }
+    .card-header__title {
+      font-size: var(--font-size-md);
+      font-weight: 700;
+      color: var(--un-blue-900);
+      flex: 1;
+    }
+    .card-header__meta {
+      font-size: var(--font-size-sm);
+      color: var(--gray-500);
+    }
+
+    /* Table */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead { background: var(--gray-50); }
+    .data-table th {
+      padding: var(--sp-3) var(--sp-4);
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      text-align: left;
+      border-bottom: 1px solid #E0E0E0;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .data-table th.sortable { cursor: pointer; }
+    .data-table th.sortable:hover { color: var(--un-blue-700); background: var(--un-blue-100); }
+    .data-table th .sort-icon { margin-left: 4px; opacity: .5; }
+    .data-table th.sorted { color: var(--un-blue-700); }
+    .data-table th.sorted .sort-icon { opacity: 1; }
+    .data-table td {
+      padding: var(--sp-3) var(--sp-4);
+      font-size: var(--font-size-sm);
+      border-bottom: 1px solid #F0F0F0;
+      vertical-align: middle;
+    }
+    .data-table tbody tr { transition: background .1s; }
+    .data-table tbody tr:hover { background: var(--gray-50); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+
+    /* Resolution ID link */
+    .res-id {
+      font-weight: 700;
+      color: var(--un-blue-700);
+      font-size: var(--font-size-sm);
+      white-space: nowrap;
+    }
+    .res-id:hover { color: var(--un-blue-500); }
+
+    /* Resolution title */
+    .res-title {
+      font-weight: 500;
+      color: var(--gray-900);
+      max-width: 320px;
+    }
+    .res-title small {
+      display: block;
+      color: var(--gray-500);
+      font-size: var(--font-size-xs);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    /* Status badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 10px;
+      border-radius: var(--radius-pill);
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .badge-approved  { background: var(--status-approved-bg);  color: var(--status-approved);  } .badge-approved::before  { background: var(--status-approved); }
+    .badge-pending   { background: var(--status-pending-bg);   color: var(--status-pending);   } .badge-pending::before   { background: var(--status-pending); }
+    .badge-draft     { background: var(--status-draft-bg);     color: var(--status-draft);     } .badge-draft::before     { background: var(--status-draft); }
+    .badge-review    { background: var(--status-review-bg);    color: var(--status-review);    } .badge-review::before    { background: var(--status-review); }
+    .badge-rejected  { background: var(--status-rejected-bg);  color: var(--status-rejected);  } .badge-rejected::before  { background: var(--status-rejected); }
+
+    /* Priority indicator */
+    .priority-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .priority-high   { background: var(--status-rejected); }
+    .priority-medium { background: var(--status-pending); }
+    .priority-low    { background: var(--status-approved); }
+
+    /* Progress bar inline */
+    .progress-cell { display: flex; align-items: center; gap: var(--sp-2); }
+    .progress-bar-wrap { flex: 1; height: 6px; background: #E0E0E0; border-radius: var(--radius-pill); overflow: hidden; max-width: 80px; }
+    .progress-bar-fill { height: 100%; background: var(--un-blue-500); border-radius: var(--radius-pill); }
+    .progress-bar-fill.complete { background: var(--status-approved); }
+    .progress-text { font-size: var(--font-size-xs); color: var(--gray-500); white-space: nowrap; }
+
+    /* Row action buttons */
+    .row-actions { display: flex; gap: var(--sp-1); opacity: 0; transition: opacity .1s; }
+    .data-table tbody tr:hover .row-actions { opacity: 1; }
+
+    /* ===================================================================
+       PAGINATION
+    =================================================================== */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-3) var(--sp-5);
+      border-top: 1px solid #E0E0E0;
+      font-size: var(--font-size-sm);
+      color: var(--gray-500);
+    }
+    .pagination__pages { display: flex; gap: var(--sp-1); align-items: center; }
+    .page-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid transparent;
+      background: none;
+      font-size: var(--font-size-sm);
+      color: var(--gray-700);
+      transition: all .12s;
+      cursor: pointer;
+    }
+    .page-btn:hover { background: var(--gray-100); }
+    .page-btn.active { background: var(--un-blue-500); color: var(--white); border-color: var(--un-blue-500); font-weight: 700; }
+    .page-btn:disabled { opacity: .4; cursor: default; }
+
+    /* ===================================================================
+       BANNER / ALERT
+    =================================================================== */
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sp-3);
+      padding: var(--sp-3) var(--sp-4);
+      border-radius: var(--radius-sm);
+      border-left: 4px solid;
+      font-size: var(--font-size-sm);
+    }
+    .alert-info    { background: var(--un-blue-100); border-color: var(--un-blue-500); color: var(--un-blue-700); }
+    .alert-warning { background: var(--un-gold-light); border-color: var(--un-gold); color: #7A5C00; }
+    .alert-success { background: var(--status-approved-bg); border-color: var(--status-approved); color: var(--status-approved); }
+
+    /* ===================================================================
+       DETAIL PANEL (slide-in from right)
+    =================================================================== */
+    .detail-panel-overlay {
+      position: fixed; inset: 0;
+      background: rgba(10,34,64,.35);
+      z-index: 200;
+      display: none;
+      animation: fadeIn .2s ease;
+    }
+    .detail-panel-overlay.open { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .detail-panel {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 560px;
+      background: var(--white);
+      box-shadow: var(--shadow-lg);
+      z-index: 201;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform .25s cubic-bezier(.4,0,.2,1);
+    }
+    .detail-panel.open { transform: translateX(0); }
+
+    .detail-panel__header {
+      padding: var(--sp-5) var(--sp-6);
+      border-bottom: 1px solid #E0E0E0;
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sp-3);
+      background: var(--un-blue-900);
+      color: var(--white);
+    }
+    .detail-panel__header-text { flex: 1; }
+    .detail-panel__header h2 { font-size: var(--font-size-lg); font-weight: 700; line-height: 1.3; }
+    .detail-panel__header p { font-size: var(--font-size-sm); color: rgba(255,255,255,.7); margin-top: var(--sp-1); }
+    .detail-panel__close {
+      background: none; border: none; color: var(--white);
+      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 20px; opacity: .7; transition: opacity .1s;
+    }
+    .detail-panel__close:hover { opacity: 1; background: rgba(255,255,255,.1); }
+
+    .detail-panel__body {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--sp-5) var(--sp-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-5);
+    }
+
+    .detail-section__title {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      padding-bottom: var(--sp-2);
+      border-bottom: 1px solid #E0E0E0;
+      margin-bottom: var(--sp-3);
+    }
+    .detail-field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-3) var(--sp-5);
+    }
+    .detail-field__label {
+      font-size: var(--font-size-xs);
+      color: var(--gray-500);
+      font-weight: 600;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .detail-field__value {
+      font-size: var(--font-size-sm);
+      color: var(--gray-900);
+      font-weight: 500;
+    }
+
+    /* Approval timeline */
+    .timeline { list-style: none; position: relative; padding-left: 24px; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px; top: 8px; bottom: 8px;
+      width: 1.5px; background: #E0E0E0;
+    }
+    .timeline__item {
+      position: relative;
+      margin-bottom: var(--sp-4);
+    }
+    .timeline__dot {
+      position: absolute;
+      left: -20px; top: 3px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 2px solid var(--un-blue-500);
+      background: var(--white);
+    }
+    .timeline__dot.done { background: var(--un-blue-500); }
+    .timeline__dot.current { background: var(--white); border-color: var(--status-pending); box-shadow: 0 0 0 3px var(--status-pending-bg); }
+    .timeline__dot.upcoming { border-color: #BDBDBD; }
+    .timeline__label { font-size: var(--font-size-sm); font-weight: 600; color: var(--gray-900); }
+    .timeline__meta { font-size: var(--font-size-xs); color: var(--gray-500); margin-top: 2px; }
+
+    .detail-panel__footer {
+      padding: var(--sp-4) var(--sp-6);
+      border-top: 1px solid #E0E0E0;
+      display: flex;
+      gap: var(--sp-3);
+      background: var(--gray-50);
+    }
+
+    /* ===================================================================
+       EMPTY STATE
+    =================================================================== */
+    .empty-state {
+      text-align: center;
+      padding: var(--sp-10) var(--sp-6);
+      color: var(--gray-500);
+    }
+    .empty-state svg { margin-bottom: var(--sp-4); opacity: .4; }
+    .empty-state h3 { font-size: var(--font-size-lg); color: var(--gray-700); margin-bottom: var(--sp-2); }
+
+    /* ===================================================================
+       TOOLTIP (CSS-only)
+    =================================================================== */
+    [data-tooltip] { position: relative; }
+    [data-tooltip]:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gray-900);
+      color: var(--white);
+      font-size: var(--font-size-xs);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    /* ===================================================================
+       UTILITIES
+    =================================================================== */
+    .flex { display: flex; } .items-center { align-items: center; } .gap-2 { gap: var(--sp-2); }
+    .text-muted { color: var(--gray-500); }
+    .text-sm { font-size: var(--font-size-sm); }
+    .text-xs { font-size: var(--font-size-xs); }
+    .fw-600 { font-weight: 600; }
+    .ml-auto { margin-left: auto; }
+
+    /* ===================================================================
+       RESPONSIVE
+    =================================================================== */
+    @media (max-width: 1200px) { .kpi-row { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 900px)  { .kpi-row { grid-template-columns: repeat(2, 1fr); } .sidebar { display: none; } }
+
+    /* ===================================================================
+       DESIGN NOTE OVERLAY
+    =================================================================== */
+    .design-note {
+      position: fixed;
+      bottom: var(--sp-4);
+      right: var(--sp-4);
+      background: var(--un-blue-900);
+      color: var(--white);
+      padding: var(--sp-3) var(--sp-4);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-xs);
+      box-shadow: var(--shadow-lg);
+      max-width: 260px;
+      z-index: 50;
+    }
+    .design-note strong { color: var(--un-blue-300); }
+  </style>
+</head>
+
+<body>
+
+  <!-- ================================================================
+       TOP NAVIGATION BAR
+  ================================================================ -->
+  <header class="topbar" role="banner">
+    <a href="#" class="topbar__logo" aria-label="MRMS Home">
+      <div class="topbar__logo-emblem" aria-hidden="true">
+        <!-- UN laurel wreath simplified SVG -->
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="9" stroke="#0A2240" stroke-width="1.5"/>
+          <path d="M12 7v5l3 3" stroke="#0A2240" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M5 12c0-3.87 3.13-7 7-7" stroke="#009EDB" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M19 12c0 3.87-3.13 7-7 7" stroke="#009EDB" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="topbar__title">
+          MRMS
+          <span>Mandate Review & Management System</span>
+        </div>
+      </div>
+    </a>
+
+    <div class="topbar__divider" aria-hidden="true"></div>
+
+    <nav class="topbar__nav" aria-label="Primary navigation">
+      <a href="#" class="topbar__nav-link active" aria-current="page">Resolutions</a>
+      <a href="#" class="topbar__nav-link">Mandates</a>
+      <a href="#" class="topbar__nav-link">PBI Forms</a>
+      <a href="#" class="topbar__nav-link">Reports</a>
+      <a href="#" class="topbar__nav-link">Admin</a>
+    </nav>
+
+    <div class="topbar__actions">
+      <div class="topbar__search" role="search">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="6.5" cy="6.5" r="5" stroke="rgba(255,255,255,.6)" stroke-width="1.5"/>
+          <path d="M10.5 10.5l3.5 3.5" stroke="rgba(255,255,255,.6)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input type="search" placeholder="Search resolutions…" aria-label="Search resolutions" />
+      </div>
+
+      <button class="topbar__icon-btn" aria-label="Notifications" data-tooltip="Notifications">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span class="notif-badge" aria-label="3 unread notifications"></span>
+      </button>
+
+      <button class="topbar__icon-btn" aria-label="Help" data-tooltip="Help & Documentation">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </button>
+
+      <div class="topbar__avatar" role="button" tabindex="0" aria-label="User menu: Pritam Pawar" data-tooltip="Pritam Pawar">PP</div>
+    </div>
+  </header>
+
+  <!-- ================================================================
+       APP LAYOUT
+  ================================================================ -->
+  <div class="app-layout">
+
+    <!-- LEFT SIDEBAR -->
+    <nav class="sidebar" aria-label="Secondary navigation">
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">Navigation</div>
+        <a href="#" class="sidebar__item active">
+          <span class="icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </span>
+          Resolution Dashboard
+        </a>
+        <a href="#" class="sidebar__item">
+          <span class="icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </span>
+          My Dashboard
+          <span class="sidebar__badge warn">5</span>
+        </a>
+        <a href="#" class="sidebar__item">
+          <span class="icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M2 12h2M20 12h2"/>
+            </svg>
+          </span>
+          Mandate Dashboard
+        </a>
+        <a href="#" class="sidebar__item">
+          <span class="icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </span>
+          Revised Estimates
+        </a>
+      </div>
+
+      <div class="sidebar__divider"></div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">Sessions</div>
+        <button class="sidebar__item">
+          <span class="icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+          HRC 56 (2024)
+          <span class="sidebar__badge">128</span>
+        </button>
+        <button class="sidebar__item">
+          <span class="icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+          HRC 57 (2024)
+          <span class="sidebar__badge">94</span>
+        </button>
+        <button class="sidebar__item">
+          <span class="icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+          GA 79 (2025)
+          <span class="sidebar__badge">241</span>
+        </button>
+      </div>
+
+      <div class="sidebar__divider"></div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">Quick Actions</div>
+        <button class="sidebar__item">
+          <span class="icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          </span>
+          Add Resolution
+        </button>
+        <button class="sidebar__item">
+          <span class="icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          </span>
+          Bulk Upload
+        </button>
+        <button class="sidebar__item">
+          <span class="icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </span>
+          Export to Excel
+        </button>
+      </div>
+
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main" id="main-content">
+
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <div class="page-header__text">
+          <div class="page-header__breadcrumb">
+            <a href="#">MRMS</a> / Resolutions
+          </div>
+          <h1 class="page-header__title">Resolution Dashboard</h1>
+          <p class="page-header__subtitle">Session 2024 — Human Rights Council · 463 resolutions · Last updated 5 May 2026 08:42</p>
+        </div>
+        <div class="page-header__actions">
+          <button class="btn btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+          <button class="btn btn-primary" onclick="openPanel()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Add Resolution
+          </button>
+        </div>
+      </div>
+
+      <!-- ALERT BANNER -->
+      <div class="alert alert-warning" role="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" flex-shrink="0" style="flex-shrink:0;margin-top:1px" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <strong>3 resolutions</strong> are awaiting PBI cost entry for more than 14 days — MRMS-2174, MRMS-2233, MRMS-2215.
+          <a href="#" style="margin-left:8px;font-weight:600">Review now →</a>
+        </div>
+      </div>
+
+      <!-- KPI CARDS -->
+      <div class="kpi-row" role="region" aria-label="Summary statistics">
+
+        <div class="kpi-card">
+          <div class="kpi-card__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="kpi-card__label">Total Resolutions</div>
+          <div class="kpi-card__value">463</div>
+          <div class="kpi-card__delta up">↑ 12 this month</div>
+        </div>
+
+        <div class="kpi-card accent-green">
+          <div class="kpi-card__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="kpi-card__label">Fully Approved</div>
+          <div class="kpi-card__value">289</div>
+          <div class="kpi-card__delta">62% of total</div>
+        </div>
+
+        <div class="kpi-card accent-amber">
+          <div class="kpi-card__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="kpi-card__label">Pending Approval</div>
+          <div class="kpi-card__value">94</div>
+          <div class="kpi-card__delta down">↑ 8 from last week</div>
+        </div>
+
+        <div class="kpi-card accent-purple">
+          <div class="kpi-card__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <div class="kpi-card__label">In Draft / PBI Entry</div>
+          <div class="kpi-card__value">57</div>
+          <div class="kpi-card__delta">12% of total</div>
+        </div>
+
+        <div class="kpi-card accent-gold">
+          <div class="kpi-card__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <div class="kpi-card__label">Total PBI Cost (est.)</div>
+          <div class="kpi-card__value" style="font-size:1.6rem">$41.2M</div>
+          <div class="kpi-card__delta up">↑ $1.4M from last sprint</div>
+        </div>
+
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar" role="search" aria-label="Filter resolutions">
+        <span class="filter-bar__label">Filters</span>
+
+        <div class="filter-group">
+          <label class="filter-group__label" for="f-session">Session</label>
+          <select class="form-select" id="f-session">
+            <option>All Sessions</option>
+            <option selected>HRC 56 (2024)</option>
+            <option>HRC 57 (2024)</option>
+            <option>GA 79 (2025)</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-group__label" for="f-body">Body</label>
+          <select class="form-select" id="f-body">
+            <option>All Bodies</option>
+            <option>Human Rights Council</option>
+            <option>General Assembly</option>
+            <option>Security Council</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-group__label" for="f-section">Budget Section</label>
+          <select class="form-select" id="f-section">
+            <option>All Sections</option>
+            <option>Section 2 (DGACM)</option>
+            <option>Section 24 (OHCHR)</option>
+            <option>Section 29E (UNOG)</option>
+          </select>
+        </div>
+
+        <div class="filter-group" style="margin-left:auto">
+          <span class="filter-group__label">Status</span>
+          <div class="chip-group" role="group" aria-label="Status filter">
+            <button class="chip active-all" onclick="filterChip(this)">All</button>
+            <button class="chip" onclick="filterChip(this)">Draft</button>
+            <button class="chip" onclick="filterChip(this)">Pending</button>
+            <button class="chip" onclick="filterChip(this)">In Review</button>
+            <button class="chip" onclick="filterChip(this)">Approved</button>
+          </div>
+        </div>
+
+        <button class="btn btn-ghost btn-sm">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.01"/></svg>
+          Reset
+        </button>
+      </div>
+
+      <!-- DATA TABLE CARD -->
+      <div class="card" role="region" aria-label="Resolutions list">
+        <div class="card-header">
+          <h2 class="card-header__title">Resolutions</h2>
+          <div class="card-header__meta">Showing 1–10 of 463</div>
+          <div class="flex items-center gap-2" style="margin-left:auto">
+            <button class="btn btn-ghost btn-sm btn-icon" aria-label="Column visibility" data-tooltip="Columns">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+            <button class="btn btn-secondary btn-sm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto">
+          <table class="data-table" aria-label="Resolution records">
+            <thead>
+              <tr>
+                <th><input type="checkbox" aria-label="Select all resolutions" /></th>
+                <th class="sortable sorted" aria-sort="descending">
+                  Draft Res No <span class="sort-icon" aria-hidden="true">↓</span>
+                </th>
+                <th class="sortable" aria-sort="none">Resolution Title <span class="sort-icon" aria-hidden="true">↕</span></th>
+                <th class="sortable" aria-sort="none">Body / Session <span class="sort-icon" aria-hidden="true">↕</span></th>
+                <th>Status</th>
+                <th class="sortable" aria-sort="none">Approval Progress <span class="sort-icon" aria-hidden="true">↕</span></th>
+                <th class="sortable" aria-sort="none">PBI Cost <span class="sort-icon" aria-hidden="true">↕</span></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- Row 1 -->
+              <tr>
+                <td><input type="checkbox" aria-label="Select A/HRC/56/L.1" /></td>
+                <td><a href="#" class="res-id" onclick="openPanel()">A/HRC/56/L.1</a></td>
+                <td class="res-title">
+                  Human rights situation in Syria
+                  <small>Section 24 · OHCHR</small>
+                </td>
+                <td class="text-sm text-muted">HRC 56 · 2024</td>
+                <td><span class="badge badge-approved">Approved</span></td>
+                <td>
+                  <div class="progress-cell">
+                    <div class="progress-bar-wrap"><div class="progress-bar-fill complete" style="width:100%"></div></div>
+                    <span class="progress-text">5/5</span>
+                  </div>
+                </td>
+                <td class="text-sm fw-600">$248,500</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="btn btn-ghost btn-sm btn-icon" aria-label="View A/HRC/56/L.1" data-tooltip="View" onclick="openPanel()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button class="btn btn-ghost btn-sm btn-icon" aria-label="Edit A/HRC/56/L.1" data-tooltip="Edit">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 2 -->
+              <tr>
+                <td><input type="checkbox" aria-label="Select A/HRC/56/L.2" /></td>
+                <td><a href="#" class="res-id" onclick="openPanel()">A/HRC/56/L.2</a></td>
+                <td class="res-title">
+                  Right to development — financing mechanisms
+                  <small>Section 2 · DGACM</small>
+                </td>
+                <td class="text-sm text-muted">HRC 56 · 2024</td>
+                <td><span class="badge badge-pending">Pending</span></td>
+                <td>
+                  <div class="progress-cell">
+                    <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:60%"></div></div>
+                    <span class="progress-text">3/5</span>
+                  </div>
+                </td>
+                <td class="text-sm fw-600">$115,200</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="btn btn-ghost btn-sm btn-icon" aria-label="View" data-tooltip="View" onclick="openPanel()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button class="btn btn-ghost btn-sm btn-icon" aria-label="Edit" data-tooltip="Edit">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 3 -->
+              <tr>
+                <td><input type="checkbox" aria-label="Select A/HRC/56/L.3" /></td>
+                <td><a href="#" class="res-id">A/HRC/56/L.3</a></td>
+                <td class="res-title">
+                  Mandate of the Special Rapporteur on torture
+                  <small>Section 24 · OHCHR</small>
+                </td>
+                <td class="text-sm text-muted">HRC 56 · 2024</td>
+                <td><span class="badge badge-review">In Review</span></td>
+                <td>
+                  <div class="progress-cell">
+                    <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:40%"></div></div>
+                    <span class="progress-text">2/5</span>
+                  </div>
+                </td>
+                <td class="text-sm fw-600">$392,000</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="btn btn-ghost btn-sm btn-icon" aria-label="View" data-tooltip="View" onclick="openPanel()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button class="btn btn-ghost btn-sm btn-icon" aria-label="Edit" data-tooltip="Edit">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 4 -->
+              <tr>
+                <td><input type="checkbox" aria-label="Select A/HRC/56/L.4" /></td>
+                <td><a href="#" class="res-id">A/HRC/56/L.4</a></td>
+                <td class="res-title">
+                  Freedom of religion or belief
+                  <small>Section 2 · DGACM</small>
+                </td>
+                <td class="text-sm text-muted">HRC 56 · 2024</td>
+                <td><span class="badge badge-draft">Draft</span></td>
+                <td>
+                  <div class="progress-cell">
+                    <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:20%"></div></div>
+                    <span class="progress-text">1/5</span>
+                  </div>
+                </td>
+                <td class="text-sm text-muted">—</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="btn btn-ghost btn-sm btn-icon" aria-label="View" data-tooltip="View" onclick="openPanel()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button class="btn btn-ghost btn-sm btn-icon" aria-label="Edit" data-tooltip="Edit">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 5 -->
+              <tr>
+                <td><input type="checkbox" aria-label="Select A/HRC/56/L.5" /></td>
+                <td><a href="#" class="res-id" onclick="openPanel()">A/HRC/56/L.5</a></td>
+                <td class="res-title">
+                  Right to housing — follow-up actions
+                  <small>Section 24 · OHCHR · <span style="color:#B71C1C;font-weight:600">Amendment</span></small>
+                </td>
+                <td class="text-sm text-muted">HRC 56 · 2024</td>
+                <td><span class="badge badge-approved">Approved</span></td>
+                <td>
+                  <div class="progress-cell">
+                    <div class="progress-bar-wrap"><div class="progress-bar-fill complete" style="width:100%"></div></div>
+                    <span class="progress-text">5/5</span>
+                  </div>
+                </td>
+                <td class="text-sm fw-600">$87,300</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="btn btn-ghost btn-sm btn-icon" aria-label="View" data-tooltip="View" onclick="openPanel()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button class="btn btn-ghost btn-sm btn-icon" aria-label="Edit" data-tooltip="Edit">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination" aria-label="Table pagination">
+          <div class="text-sm text-muted">
+            <select class="form-select" style="height:28px;font-size:.75rem" aria-label="Rows per page">
+              <option>10 per page</option>
+              <option>25 per page</option>
+              <option>50 per page</option>
+            </select>
+          </div>
+          <div class="pagination__pages" role="navigation" aria-label="Page navigation">
+            <button class="page-btn" aria-label="Previous page" disabled>‹</button>
+            <button class="page-btn active" aria-current="page" aria-label="Page 1">1</button>
+            <button class="page-btn" aria-label="Page 2">2</button>
+            <button class="page-btn" aria-label="Page 3">3</button>
+            <span class="text-muted" style="padding:0 4px;font-size:.875rem">…</span>
+            <button class="page-btn" aria-label="Page 47">47</button>
+            <button class="page-btn" aria-label="Next page">›</button>
+          </div>
+          <div class="text-sm text-muted">Page 1 of 47</div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ================================================================
+       RESOLUTION DETAIL PANEL (slide-in)
+  ================================================================ -->
+  <div class="detail-panel-overlay" id="panelOverlay" onclick="closePanel()" aria-hidden="true"></div>
+
+  <aside class="detail-panel" id="detailPanel" role="complementary" aria-label="Resolution detail" aria-modal="true">
+    <div class="detail-panel__header">
+      <div class="detail-panel__header-text">
+        <h2>A/HRC/56/L.1</h2>
+        <p>Human rights situation in Syria</p>
+      </div>
+      <button class="detail-panel__close" onclick="closePanel()" aria-label="Close detail panel">✕</button>
+    </div>
+
+    <div class="detail-panel__body">
+
+      <!-- Status row -->
+      <div class="flex items-center gap-2">
+        <span class="badge badge-approved">Approved</span>
+        <span class="badge badge-draft" style="background:var(--status-draft-bg);color:var(--status-draft)">Section 24</span>
+        <span class="text-xs text-muted" style="margin-left:auto">Created 12 Jan 2024 · Updated 3 May 2026</span>
+      </div>
+
+      <!-- Resolution details -->
+      <div>
+        <div class="detail-section__title">Resolution Details</div>
+        <div class="detail-field-grid">
+          <div>
+            <div class="detail-field__label">Draft Resolution No</div>
+            <div class="detail-field__value">A/HRC/56/L.1</div>
+          </div>
+          <div>
+            <div class="detail-field__label">Adopted Resolution No</div>
+            <div class="detail-field__value">A/HRC/56/1</div>
+          </div>
+          <div>
+            <div class="detail-field__label">Session / Year</div>
+            <div class="detail-field__value">HRC 56 — 2024</div>
+          </div>
+          <div>
+            <div class="detail-field__label">Intergovernmental Body</div>
+            <div class="detail-field__value">Human Rights Council</div>
+          </div>
+          <div>
+            <div class="detail-field__label">Budget Section</div>
+            <div class="detail-field__value">Section 24 — OHCHR</div>
+          </div>
+          <div>
+            <div class="detail-field__label">Type of File</div>
+            <div class="detail-field__value">Resolution</div>
+          </div>
+          <div style="grid-column:1/-1">
+            <div class="detail-field__label">Resolution Title</div>
+            <div class="detail-field__value">Human rights situation in the Syrian Arab Republic — follow-up measures and reporting requirements for the 56th session cycle</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PBI Cost summary -->
+      <div>
+        <div class="detail-section__title">PBI Cost Summary</div>
+        <div class="detail-field-grid">
+          <div>
+            <div class="detail-field__label">Estimated PBI Total</div>
+            <div class="detail-field__value" style="font-size:1.25rem;font-weight:700;color:var(--un-blue-700)">$248,500</div>
+          </div>
+          <div>
+            <div class="detail-field__label">Approved PBI Total</div>
+            <div class="detail-field__value" style="font-size:1.25rem;font-weight:700;color:var(--status-approved)">$248,500</div>
+          </div>
+          <div>
+            <div class="detail-field__label">Consultant Experts</div>
+            <div class="detail-field__value">$89,200</div>
+          </div>
+          <div>
+            <div class="detail-field__label">Travel &amp; Contributions</div>
+            <div class="detail-field__value">$67,800</div>
+          </div>
+          <div>
+            <div class="detail-field__label">Staff Costs</div>
+            <div class="detail-field__value">$91,500</div>
+          </div>
+          <div>
+            <div class="detail-field__label">Other Services</div>
+            <div class="detail-field__value">$0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Approval Timeline -->
+      <div>
+        <div class="detail-section__title">Approval Workflow</div>
+        <ul class="timeline" aria-label="Approval stages">
+          <li class="timeline__item">
+            <div class="timeline__dot done" aria-label="Done"></div>
+            <div class="timeline__label">OHCHR Substantive Staff</div>
+            <div class="timeline__meta">Approved 14 Jan 2024 · J. Müller</div>
+          </li>
+          <li class="timeline__item">
+            <div class="timeline__dot done" aria-label="Done"></div>
+            <div class="timeline__label">OHCHR Finance</div>
+            <div class="timeline__meta">Approved 16 Jan 2024 · F. Nakamura</div>
+          </li>
+          <li class="timeline__item">
+            <div class="timeline__dot done" aria-label="Done"></div>
+            <div class="timeline__label">OHCHR Focal Point</div>
+            <div class="timeline__meta">Approved 17 Jan 2024 · P. Sharma</div>
+          </li>
+          <li class="timeline__item">
+            <div class="timeline__dot done" aria-label="Done"></div>
+            <div class="timeline__label">PPBD FBO Review</div>
+            <div class="timeline__meta">Approved 19 Jan 2024 · D. Chen</div>
+          </li>
+          <li class="timeline__item">
+            <div class="timeline__dot done" aria-label="Done"></div>
+            <div class="timeline__label">PPBD Final Approval</div>
+            <div class="timeline__meta">Approved 22 Jan 2024 · R. Okonkwo</div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="detail-panel__footer">
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit Resolution
+      </button>
+      <button class="btn btn-secondary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Generate OS
+      </button>
+      <button class="btn btn-secondary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        PBI Entry
+      </button>
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="closePanel()">Close</button>
+    </div>
+  </aside>
+
+  <!-- ================================================================
+       DESIGN NOTE
+  ================================================================ -->
+  <div class="design-note" role="note">
+    <strong>UI Mockup v1.0</strong><br/>
+    Resolution Dashboard · MRMS<br/>
+    UN Branding · Fluent UI v9 tokens<br/>
+    WCAG 2.1 AA · 5 May 2026
+  </div>
+
+  <script>
+    function openPanel() {
+      document.getElementById('panelOverlay').classList.add('open');
+      document.getElementById('detailPanel').classList.add('open');
+      document.getElementById('detailPanel').focus();
+    }
+    function closePanel() {
+      document.getElementById('panelOverlay').classList.remove('open');
+      document.getElementById('detailPanel').classList.remove('open');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+    function filterChip(el) {
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active-all', 'active'));
+      el.classList.add('active-all');
+    }
+  </script>
+
+</body>
+</html>

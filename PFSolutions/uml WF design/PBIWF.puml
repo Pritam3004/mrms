@@ -1,0 +1,40 @@
+@startuml PBI Entry and Approval
+skinparam sequenceArrowThickness 1.5
+skinparam roundcorner 8
+skinparam sequenceParticipantBorderColor #534AB7
+skinparam sequenceParticipantBackgroundColor #EEEDFE
+skinparam sequenceParticipantFontColor #3C3489
+skinparam sequenceArrowColor #534AB7
+skinparam noteBorderColor #1D9E75
+skinparam noteBackgroundColor #E1F5EE
+
+title PBI Entry & Approval Stages
+
+actor "User\n(Focal Point)" as user
+participant "SPFx PBI Form" as spfx
+participant "SharePoint\nLists & Libraries" as sp
+participant "Power Automate" as pa
+actor "Approver" as approver
+
+user -> spfx : Open PBI form\n(Conference / OHCHR / Misc)
+spfx -> sp : Read OP and\nResolution data
+sp -> spfx : Return data
+spfx -> user : Render pre-filled form
+user -> spfx : Enter PBI data\nand submit
+
+loop For each approval stage: Requested → Revised Estimate → ACABQ → GA Approved
+  spfx -> sp : Save / update\nPBI record
+  sp -> pa : Trigger approval\nflow for stage
+  pa -> approver : Notify approver
+  alt Approved
+    approver -> pa : Approve
+    pa -> sp : Advance PBI\nto next stage
+    pa -> user : Notify stage\ncomplete
+  else Returned
+    approver --> pa : Return with comments
+    pa --> sp : Reset PBI\nto previous stage
+    pa --> user : Notify return\nwith comments
+  end
+end
+
+@enduml

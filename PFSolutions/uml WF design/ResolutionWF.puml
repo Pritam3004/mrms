@@ -1,0 +1,28 @@
+@startuml ResolutionWorkflow
+skinparam sequenceArrowThickness 1.5
+skinparam roundcorner 8
+skinparam sequenceParticipantBorderColor #534AB7
+skinparam sequenceParticipantBackgroundColor #EEEDFE
+skinparam sequenceParticipantFontColor #3C3489
+skinparam sequenceArrowColor #534AB7
+skinparam noteBorderColor #1D9E75
+skinparam noteBackgroundColor #E1F5EE
+
+title Resolution Workflow
+
+participant "mrms@un.org\n(Outlook)" as mailbox
+participant "Power Automate" as pa
+participant "Azure Functions" as af
+participant "SharePoint\nLists & Libraries" as sp
+
+mailbox -> pa : Email arrives with\n as received attachment
+pa -> af : Parse subject\nand attachment
+af -> pa : Return metadata JSON
+pa -> sp : Create Resolution\n(Document Set)
+pa -> sp : Upload As Received\nfile to Document Set
+pa -> af : Trigger OP extraction
+af -> af : Parse Operative\nParagraphs
+af -> sp : Save OPs against\nResolution / Mandate
+pa -> sp : Update Resolution\nstatus
+pa -> mailbox : Send notification\nto assignees
+@enduml

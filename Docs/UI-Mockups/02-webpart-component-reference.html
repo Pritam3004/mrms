@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MRMS — Webpart Component Reference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --un-blue-900: #0A2240; --un-blue-700: #1A4A7C; --un-blue-500: #009EDB;
+      --un-blue-300: #4FC3F7; --un-blue-100: #E1F4FB; --un-gold: #C89520;
+      --sp-theme: #0078D4; --sp-theme-hover: #1068B0;
+      --gray-900: #201F1E; --gray-700: #3B3B3B; --gray-500: #605E5C;
+      --gray-300: #A19F9D; --gray-200: #C8C6C4; --gray-100: #F3F2F1;
+      --gray-50:  #FAF9F8; --white: #FFFFFF;
+      --approved-fg: #107C10; --approved-bg: #DFF6DD;
+      --pending-fg:  #C05000; --pending-bg:  #FFF4CE;
+      --draft-fg:    #1A4A7C; --draft-bg:    #EFF6FC;
+      --review-fg:   #5C2E91; --review-bg:   #F4EDF9;
+      --error-fg:    #A4262C; --error-bg:    #FDE7E9;
+      --withdrawn-fg:#605E5C;--withdrawn-bg: #F3F2F1;
+      --font: 'Source Sans 3','Segoe UI',Arial,sans-serif;
+      --mono: 'Fira Code','Cascadia Code','Consolas',monospace;
+      --r3: 3px; --r6: 6px; --r10: 10px;
+      --shadow: 0 1.6px 3.6px rgba(0,0,0,.13),0 0.3px 0.9px rgba(0,0,0,.1);
+    }
+    *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 14px; background: var(--gray-100); }
+    body { font-family: var(--font); color: var(--gray-900); }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .page {
+      max-width: 1400px; margin: 0 auto;
+      padding: 28px 24px; display: flex; flex-direction: column; gap: 32px;
+    }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--un-blue-900); }
+    .page-sub { font-size: .875rem; color: var(--gray-500); margin-top: 4px; }
+
+    .section-header {
+      font-size: .7rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .12em; color: var(--gray-500);
+      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    }
+    .section-header::after {
+      content:''; flex:1; height:1px; background: var(--gray-200);
+    }
+
+    /* Annotation chip */
+    .fl-label {
+      font-family: var(--mono); font-size: .65rem; font-weight: 500;
+      background: var(--un-blue-900); color: #9FD9F6;
+      padding: 2px 7px; border-radius: 3px; white-space: nowrap;
+    }
+    .fl-label.v9 { background: var(--review-fg); color: #E8D8FF; }
+    .fl-label.custom { background: var(--un-gold); color: var(--white); }
+
+    /* ── CARD wrapper ────────────────────────────────────────── */
+    .comp-card {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--r10); box-shadow: var(--shadow); overflow: hidden;
+    }
+    .comp-card-header {
+      background: var(--gray-50); border-bottom: 1px solid var(--gray-200);
+      padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+    }
+    .comp-card-title { font-size: .8rem; font-weight: 700; color: var(--gray-700); flex: 1; }
+    .comp-card-body { padding: 16px; }
+
+    /* ── FLUENT COMPONENTS ──────────────────────────────────── */
+
+    /* CommandBar */
+    .fl-commandbar {
+      height: 44px; background: var(--white);
+      border: 1px solid var(--gray-200); border-radius: var(--r3);
+      display: flex; align-items: center; padding: 0 6px; gap: 2px;
+    }
+    .fl-cb-btn {
+      height: 32px; padding: 0 10px; border: none; background: transparent;
+      font: 500 .875rem var(--font); color: var(--gray-700); border-radius: var(--r3);
+      cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;
+      transition: background .1s;
+    }
+    .fl-cb-btn:hover { background: var(--gray-100); }
+    .fl-cb-btn.primary { background: var(--sp-theme); color: var(--white); }
+    .fl-cb-btn.primary:hover { background: var(--sp-theme-hover); }
+    .fl-divider { width: 1px; height: 20px; background: var(--gray-200); margin: 0 4px; }
+    .fl-right { margin-left: auto; }
+
+    /* SearchBox */
+    .fl-searchbox {
+      display: flex; align-items: center; gap: 7px; height: 32px;
+      padding: 0 10px; border: 1px solid #8A8886; border-radius: var(--r3);
+      background: var(--white); width: 220px;
+    }
+    .fl-searchbox:focus-within { border-color: var(--sp-theme); box-shadow: 0 0 0 1px var(--sp-theme); }
+    .fl-searchbox input { border: none; outline: none; background: none; font: .875rem var(--font); width: 100%; color: var(--gray-900); }
+    .fl-searchbox input::placeholder { color: #A19F9D; }
+
+    /* Dropdown (Fluent Select) */
+    .fl-dropdown {
+      height: 32px; padding: 0 24px 0 8px; border: 1px solid #8A8886;
+      border-radius: var(--r3); font: .8125rem var(--font); color: var(--gray-900);
+      background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23605E5C'/%3E%3C/svg%3E") no-repeat right 7px center;
+      appearance: none; outline: none; cursor: pointer;
+    }
+    .fl-dropdown:focus { border-color: var(--sp-theme); box-shadow: 0 0 0 1px var(--sp-theme); }
+
+    /* Pivot */
+    .fl-pivot { display: flex; gap: 0; border-bottom: 2px solid var(--gray-200); }
+    .fl-pivot-tab {
+      padding: 8px 14px; font: 500 .875rem var(--font); color: var(--gray-500);
+      border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer;
+      transition: color .1s;
+    }
+    .fl-pivot-tab:hover { color: var(--gray-900); }
+    .fl-pivot-tab.active { color: var(--sp-theme); border-bottom-color: var(--sp-theme); font-weight: 600; }
+    .fl-count {
+      background: var(--sp-theme); color: var(--white);
+      font-size: .65rem; font-weight: 800; padding: 1px 5px; border-radius: 10px; margin-left: 4px;
+    }
+    .fl-pivot-tab:not(.active) .fl-count { background: var(--gray-300); }
+
+    /* MessageBar */
+    .fl-msgbar {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 8px 12px; border-radius: var(--r3); font-size: .8125rem;
+    }
+    .fl-msgbar.warning { background: #FFF4CE; border-left: 3px solid #C05000; color: #4D2600; }
+    .fl-msgbar.info    { background: var(--un-blue-100); border-left: 3px solid var(--un-blue-500); color: var(--un-blue-700); }
+    .fl-msgbar.success { background: var(--approved-bg); border-left: 3px solid var(--approved-fg); color: #001800; }
+    .fl-msgbar svg { flex-shrink: 0; margin-top: 2px; }
+
+    /* DetailsList */
+    .fl-detaillist { width: 100%; border-collapse: collapse; }
+    .fl-detaillist thead tr { background: var(--white); border-bottom: 1px solid var(--gray-200); }
+    .fl-detaillist th {
+      padding: 8px 12px; font-size: .72rem; font-weight: 700; color: var(--gray-500);
+      text-transform: uppercase; letter-spacing: .07em; text-align: left; white-space: nowrap;
+    }
+    .fl-detaillist th.sort { cursor: pointer; }
+    .fl-detaillist th.sort:hover { color: var(--sp-theme); background: var(--gray-100); }
+    .fl-detaillist tbody tr { border-bottom: 1px solid var(--gray-100); background: var(--white); transition: background .08s; }
+    .fl-detaillist tbody tr:hover { background: var(--gray-100); }
+    .fl-detaillist td { padding: 9px 12px; font-size: .875rem; vertical-align: middle; }
+    .fl-link { color: var(--sp-theme); font-weight: 600; cursor: pointer; text-decoration: none; font-size: .875rem; }
+    .fl-link:hover { text-decoration: underline; }
+
+    /* Badge / Tag */
+    .fl-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 2px;
+      font-size: .72rem; font-weight: 700; white-space: nowrap;
+    }
+    .fl-tag .d { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .fl-tag.ok  { background: var(--approved-bg); color: var(--approved-fg); } .fl-tag.ok .d  { background: var(--approved-fg); }
+    .fl-tag.warn{ background: var(--pending-bg);  color: var(--pending-fg);  } .fl-tag.warn .d{ background: var(--pending-fg); }
+    .fl-tag.dft { background: var(--draft-bg);    color: var(--draft-fg);    } .fl-tag.dft .d  { background: var(--draft-fg); }
+    .fl-tag.rev { background: var(--review-bg);   color: var(--review-fg);   } .fl-tag.rev .d  { background: var(--review-fg); }
+    .fl-tag.wth { background: var(--withdrawn-bg);color:var(--withdrawn-fg); } .fl-tag.wth .d  { background: var(--withdrawn-fg); }
+
+    /* ProgressBar */
+    .fl-progress { display: flex; align-items: center; gap: 8px; }
+    .fl-progress-bar { height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden; }
+    .fl-progress-fill { height: 100%; background: var(--sp-theme); border-radius: 2px; }
+    .fl-progress-fill.done { background: var(--approved-fg); }
+    .fl-progress-text { font-size: .72rem; color: var(--gray-500); white-space: nowrap; }
+
+    /* Panel preview */
+    .fl-panel-preview {
+      border: 1px solid var(--gray-200); border-radius: var(--r6);
+      overflow: hidden; width: 420px; box-shadow: var(--shadow);
+    }
+    .fl-panel-hdr {
+      background: var(--un-blue-900); padding: 16px 18px;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .fl-panel-hdr h3 { font-size: 1rem; font-weight: 700; color: var(--white); }
+    .fl-panel-hdr p  { font-size: .75rem; color: rgba(255,255,255,.7); margin-top: 2px; }
+    .fl-panel-hdr-x { background: transparent; border: none; color: rgba(255,255,255,.8); font-size: 18px; cursor: pointer; margin-left: auto; }
+    .fl-panel-body { padding: 14px 18px; background: var(--white); }
+
+    /* Form fields (TextField, DatePicker) */
+    .fl-field { margin-bottom: 14px; }
+    .fl-field-label { font-size: .75rem; font-weight: 600; color: var(--gray-700); margin-bottom: 4px; display: block; }
+    .fl-field-label.required::after { content: ' *'; color: var(--error-fg); }
+    .fl-textfield {
+      width: 100%; height: 32px; padding: 0 8px;
+      border: 1px solid #8A8886; border-radius: var(--r3);
+      font: .875rem var(--font); color: var(--gray-900); outline: none;
+      background: var(--white);
+    }
+    .fl-textfield:focus { border-color: var(--sp-theme); box-shadow: 0 0 0 1px var(--sp-theme); }
+    .fl-textfield.readonly { background: var(--gray-50); color: var(--gray-500); cursor: default; }
+    .fl-textarea { width: 100%; padding: 8px; border: 1px solid #8A8886; border-radius: var(--r3); font: .875rem var(--font); color: var(--gray-900); outline: none; resize: vertical; min-height: 72px; }
+    .fl-textarea:focus { border-color: var(--sp-theme); box-shadow: 0 0 0 1px var(--sp-theme); }
+
+    /* Fluent Spinner */
+    .fl-spinner { display: inline-flex; align-items: center; gap: 10px; font-size: .875rem; color: var(--gray-500); }
+    .fl-spinner-ring {
+      width: 24px; height: 24px; border-radius: 50%;
+      border: 3px solid var(--gray-200); border-top-color: var(--sp-theme);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Fluent DefaultButton / PrimaryButton */
+    .fl-btn { padding: 6px 14px; font: 600 .875rem var(--font); border-radius: var(--r3); cursor: pointer; border: 1px solid; transition: all .1s; }
+    .fl-btn.prim { background: var(--sp-theme); color: var(--white); border-color: var(--sp-theme); }
+    .fl-btn.prim:hover { background: var(--sp-theme-hover); border-color: var(--sp-theme-hover); }
+    .fl-btn.def  { background: var(--white); color: var(--gray-900); border-color: #8A8886; }
+    .fl-btn.def:hover { background: var(--gray-100); }
+    .fl-btn.ghost { border-color: transparent; background: transparent; color: var(--sp-theme); }
+    .fl-btn.ghost:hover { background: var(--un-blue-100); }
+    .fl-btn.danger { background: var(--error-fg); color: var(--white); border-color: var(--error-fg); }
+
+    /* Persona */
+    .fl-persona { display: flex; align-items: center; gap: 8px; }
+    .fl-persona-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 800; color: var(--white); flex-shrink: 0;
+    }
+    .fl-persona-name { font-size: .875rem; font-weight: 600; color: var(--gray-900); }
+    .fl-persona-secondary { font-size: .75rem; color: var(--gray-500); }
+
+    /* Callout / Tooltip */
+    .fl-callout {
+      background: var(--gray-900); color: var(--white);
+      padding: 6px 10px; border-radius: var(--r3);
+      font-size: .75rem; line-height: 1.4; max-width: 200px;
+    }
+
+    /* Nav / Breadcrumb */
+    .fl-breadcrumb { display: flex; align-items: center; gap: 4px; font-size: .8rem; color: var(--gray-500); }
+    .fl-breadcrumb a { color: var(--sp-theme); text-decoration: none; }
+    .fl-breadcrumb a:hover { text-decoration: underline; }
+    .fl-breadcrumb-sep { color: var(--gray-300); }
+
+    /* Approval stage timeline */
+    .fl-stages { display: flex; flex-direction: column; gap: 0; }
+    .fl-stage-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--gray-100); }
+    .fl-stage-row:last-child { border-none; }
+    .fl-stage-icon {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 800;
+    }
+    .fl-stage-icon.done    { background: var(--approved-bg); color: var(--approved-fg); }
+    .fl-stage-icon.current { background: var(--pending-bg);  color: var(--pending-fg); border: 2px solid var(--pending-fg); }
+    .fl-stage-icon.next    { background: var(--gray-100); color: var(--gray-300); border: 2px solid var(--gray-200); }
+    .fl-stage-name { font-size: .8125rem; font-weight: 600; }
+    .fl-stage-meta { font-size: .72rem; color: var(--gray-500); }
+
+    /* Token display */
+    .token-pill {
+      display: inline-flex; gap: 4px; align-items: center;
+      background: var(--gray-100); border: 1px solid var(--gray-200);
+      border-radius: 2px; padding: 2px 7px; font-family: var(--mono);
+      font-size: .72rem; color: var(--review-fg);
+    }
+
+    /* KPI cards */
+    .kpi-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; }
+    .kpi { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--r6); padding: 12px 14px; position: relative; overflow: hidden; }
+    .kpi-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+    .kpi-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--gray-500); margin-bottom: 3px; }
+    .kpi-val { font-size: 1.8rem; font-weight: 700; line-height: 1; color: var(--gray-900); }
+    .kpi-sub { font-size: .72rem; color: var(--gray-500); margin-top: 2px; }
+    .kpi-sub.up   { color: var(--approved-fg); }
+    .kpi-sub.down { color: var(--error-fg); }
+
+    /* Grid helpers */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .flex-wrap { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+
+    code.inline { font-family: var(--mono); font-size: .78rem; background: var(--gray-100); padding: 1px 5px; border-radius: 3px; color: var(--review-fg); }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Page header ──────────────────────────────────────────────── -->
+  <div>
+    <div class="page-title">MRMS SPFx Component Reference</div>
+    <div class="page-sub">
+      Design reference for developers — all components use <strong>Fluent UI React v8</strong> (section2 / MRMS-Forms)
+      and <strong>Fluent UI v9</strong> (mandatedashboard / MRMS-Dashboards) · UN branding tokens applied ·
+      SharePoint Communication Site · Full-width webpart zone · WCAG 2.1 AA
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- 1. COMMANDBAR                                                    -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div>
+    <div class="section-header"><span class="fl-label">CommandBar</span> Resolution Dashboard toolbar</div>
+    <div class="comp-card">
+      <div class="comp-card-header">
+        <div class="comp-card-title">Section2WebPart — top action bar</div>
+        <span class="fl-label">ICommandBarItem[]</span>
+      </div>
+      <div class="comp-card-body">
+        <div class="fl-commandbar">
+          <button class="fl-cb-btn primary">
+            <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg>
+            New Resolution
+          </button>
+          <div class="fl-divider"></div>
+          <button class="fl-cb-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            Bulk Upload
+          </button>
+          <button class="fl-cb-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export to Excel
+          </button>
+          <button class="fl-cb-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.01"/></svg>
+            Refresh
+          </button>
+          <div class="fl-right">
+            <div class="fl-searchbox">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="#A19F9D" stroke-width="1.5"/><path d="M10 10l3.5 3.5" stroke="#A19F9D" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <input type="search" placeholder="Search resolutions…" aria-label="Search resolutions" />
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:.75rem;color:var(--gray-500)">
+          <strong>Overflow menu</strong> (…) items: Duplicate, Recall, Delete Resolution
+          &nbsp;·&nbsp; <code class="inline">DataService.getDataWithSelect()</code> for refresh
+          &nbsp;·&nbsp; Export calls <code class="inline">SheetJS xlsx.write()</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- 2. KPI SUMMARY CARDS                                            -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div>
+    <div class="section-header"><span class="fl-label custom">Custom Component</span> KPI Summary row</div>
+    <div class="comp-card">
+      <div class="comp-card-header">
+        <div class="comp-card-title">5 × summary stat cards — computed from Resolutions + Status list queries</div>
+        <span class="fl-label">Stack + Text + custom CSS module</span>
+      </div>
+      <div class="comp-card-body">
+        <div class="kpi-row">
+          <div class="kpi">
+            <div class="kpi-bar" style="background:var(--un-blue-500)"></div>
+            <div class="kpi-label">Total Resolutions</div>
+            <div class="kpi-val">463</div>
+            <div class="kpi-sub up">↑ 12 this session</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-bar" style="background:var(--approved-fg)"></div>
+            <div class="kpi-label">Fully Approved</div>
+            <div class="kpi-val">289</div>
+            <div class="kpi-sub">62% of total</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-bar" style="background:var(--pending-fg)"></div>
+            <div class="kpi-label">Pending Approval</div>
+            <div class="kpi-val">94</div>
+            <div class="kpi-sub down">↑ 8 from last week</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-bar" style="background:var(--review-fg)"></div>
+            <div class="kpi-label">PBI Entry / Draft</div>
+            <div class="kpi-val">57</div>
+            <div class="kpi-sub">12% of total</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-bar" style="background:var(--un-gold)"></div>
+            <div class="kpi-label">Total PBI Cost</div>
+            <div class="kpi-val" style="font-size:1.4rem">$41.2M</div>
+            <div class="kpi-sub up">↑ $1.4M this sprint</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- 3. FILTERS + PIVOT                                              -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div>
+    <div class="section-header"><span class="fl-label">Dropdown + Pivot</span> Filter bar</div>
+    <div class="comp-card">
+      <div class="comp-card-header">
+        <div class="comp-card-title">Filter controls — drive CAML query via <code class="inline">camljs</code> → <code class="inline">DataService.getData()</code></div>
+      </div>
+      <div class="comp-card-body">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em">Filter</span>
+          <div>
+            <label style="font-size:.72rem;color:var(--gray-500);display:block;margin-bottom:2px">Session</label>
+            <select class="fl-dropdown" aria-label="Session filter">
+              <option>All Sessions</option>
+              <option selected>HRC 56 (2024)</option>
+              <option>HRC 57 (2024)</option>
+              <option>GA 79 (2025)</option>
+              <option>GA 80 (2026)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--gray-500);display:block;margin-bottom:2px">Body</label>
+            <select class="fl-dropdown" aria-label="Intergovernmental body">
+              <option>All Bodies</option>
+              <option selected>Human Rights Council</option>
+              <option>General Assembly</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--gray-500);display:block;margin-bottom:2px">Budget Section</label>
+            <select class="fl-dropdown" aria-label="Budget section">
+              <option>All Sections</option>
+              <option>Section 2 — DGACM</option>
+              <option>Section 24 — OHCHR</option>
+              <option>Section 8 — OLA</option>
+              <option>Section 29E — UNOG</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--gray-500);display:block;margin-bottom:2px">Doc Type</label>
+            <select class="fl-dropdown" aria-label="Document type">
+              <option>All Types</option>
+              <option>New As Received</option>
+              <option>Amendment</option>
+              <option>Correction</option>
+              <option>Oral Revision</option>
+              <option>Withdrawn</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--gray-500);display:block;margin-bottom:2px">Status (Pivot)</label>
+            <div class="fl-pivot">
+              <div class="fl-pivot-tab active">All <span class="fl-count">463</span></div>
+              <div class="fl-pivot-tab">Draft <span class="fl-count">57</span></div>
+              <div class="fl-pivot-tab">Pending <span class="fl-count">94</span></div>
+              <div class="fl-pivot-tab">In Review <span class="fl-count">23</span></div>
+              <div class="fl-pivot-tab">Approved <span class="fl-count">289</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- 4. MessageBar variants                                          -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div>
+    <div class="section-header"><span class="fl-label">MessageBar</span> Contextual alerts</div>
+    <div class="comp-card">
+      <div class="comp-card-body" style="display:flex;flex-direction:column;gap:10px">
+        <div class="fl-msgbar warning">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div><strong>3 resolutions</strong> awaiting PBI cost entry for &gt;14 days — A/HRC/56/L.11, A/HRC/56/L.22, A/HRC/56/L.31. <a href="#" style="color:var(--un-blue-700);font-weight:600">Review now →</a></div>
+        </div>
+        <div class="fl-msgbar info">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>CostRates file <strong>MRMSRates_2026.xlsx</strong> valid until 31 Dec 2026. All PBI calculations sourced from this file.</div>
+        </div>
+        <div class="fl-msgbar success">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          <div>Oral Statement for <strong>A/HRC/56/L.1</strong> generated successfully and uploaded to SharePoint. <a href="#" style="color:var(--approved-fg);font-weight:600">View document →</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- 5. DetailsList + Status Badges                                  -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div>
+    <div class="section-header"><span class="fl-label">DetailsList</span> Resolution list with badges and progress</div>
+    <div class="comp-card">
+      <div class="comp-card-header">
+        <div class="comp-card-title">Resolution rows — lazy loads 20 items, virtual scroll, CAML-paged</div>
+        <span class="fl-label">IColumn[] config in Constants.ts</span>
+      </div>
+      <div class="comp-card-body" style="padding:0">
+        <div style="overflow-x:auto">
+          <table class="fl-detaillist">
+            <thead>
+              <tr>
+                <th style="width:32px"><input type="checkbox" /></th>
+                <th class="sort" style="width:130px">Draft Res No ↓</th>
+                <th>Title / Budget Section</th>
+                <th style="width:80px">Doc Type</th>
+                <th style="width:100px">Status</th>
+                <th style="width:140px">Approval Stage</th>
+                <th style="width:100px" class="sort">PBI Cost ↕</th>
+                <th style="width:80px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td><a class="fl-link">A/HRC/56/L.1</a></td>
+                <td>
+                  <div style="font-weight:500">Human rights situation in Syria</div>
+                  <div style="font-size:.72rem;color:var(--gray-500)">Section 24 — OHCHR · S.24_OHCHR</div>
+                </td>
+                <td style="font-size:.75rem;color:var(--gray-500)">New</td>
+                <td><span class="fl-tag ok"><span class="d"></span>Approved</span></td>
+                <td>
+                  <div class="fl-progress">
+                    <div class="fl-progress-bar" style="width:64px"><div class="fl-progress-fill done" style="width:100%"></div></div>
+                    <span class="fl-progress-text">5/5 · GA Appvd</span>
+                  </div>
+                </td>
+                <td style="font-size:.8rem;font-weight:600">$248,500</td>
+                <td>
+                  <div style="display:flex;gap:2px">
+                    <button style="width:26px;height:26px;background:transparent;border:none;border-radius:3px;cursor:pointer;color:var(--gray-500)" title="View">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button style="width:26px;height:26px;background:transparent;border:none;border-radius:3px;cursor:pointer;color:var(--gray-500)" title="Generate OS">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td><a class="fl-link">A/HRC/56/L.2</a></td>
+                <td>
+                  <div style="font-weight:500">Right to development <span style="font-size:.68rem;background:var(--error-bg);color:var(--error-fg);padding:1px 5px;border-radius:2px;font-weight:700">AMEND</span></div>
+                  <div style="font-size:.72rem;color:var(--gray-500)">Section 2 — DGACM · CONFSERV · to A/HRC/55/L.4</div>
+                </td>
+                <td style="font-size:.75rem;color:var(--gray-500)">Amendment</td>
+                <td><span class="fl-tag warn"><span class="d"></span>Pending</span></td>
+                <td>
+                  <div class="fl-progress">
+                    <div class="fl-progress-bar" style="width:64px"><div class="fl-progress-fill" style="width:60%"></div></div>
+                    <span class="fl-progress-text">3/5 · PPBD FBO</span>
+                  </div>
+                </td>
+                <td style="font-size:.8rem;font-weight:600">$115,200</td>
+                <td>
+                  <div style="display:flex;gap:2px">
+                    <button style="width:26px;height:26px;background:transparent;border:none;border-radius:3px;cursor:pointer;color:var(--gray-500)" title="View"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    <button style="width:26px;height:26px;background:transparent;border:none;border-radius:3px;cursor:pointer;color:var(--gray-500)" title="Edit"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td><a class="fl-link">A/HRC/56/L.3</a></td>
+                <td>
+                  <div style="font-weight:500">Mandate of the SR on torture <span style="font-size:.68rem;background:var(--review-bg);color:var(--review-fg);padding:1px 5px;border-radius:2px;font-weight:700">SR_MANDATE</span></div>
+                  <div style="font-size:.72rem;color:var(--gray-500)">Section 24 — OHCHR · S.24_OHCHR · condition: SR_MANDATE</div>
+                </td>
+                <td style="font-size:.75rem;color:var(--gray-500)">New</td>
+                <td><span class="fl-tag rev"><span class="d"></span>In Review</span></td>
+                <td>
+                  <div class="fl-progress">
+                    <div class="fl-progress-bar" style="width:64px"><div class="fl-progress-fill" style="width:40%"></div></div>
+                    <span class="fl-progress-text">2/5 · Finance</span>
+                  </div>
+                </td>
+                <td style="font-size:.8rem;font-weight:600">$392,000</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- 6. STATUS BADGES + DOC TYPE TAGS                               -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div>
+    <div class="section-header"><span class="fl-label">Tag / Badge</span> Status and document type indicators</div>
+    <div class="comp-card">
+      <div class="comp-card-body">
+        <div class="two-col">
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Resolution Status (ApprovalStatus column)</div>
+            <div class="flex-wrap">
+              <span class="fl-tag dft"><span class="d"></span>Draft</span>
+              <span class="fl-tag warn"><span class="d"></span>Pending</span>
+              <span class="fl-tag rev"><span class="d"></span>In Review</span>
+              <span class="fl-tag ok"><span class="d"></span>Approved</span>
+              <span class="fl-tag wth"><span class="d"></span>Withdrawn</span>
+              <span class="fl-tag" style="background:var(--error-bg);color:var(--error-fg)"><span class="d" style="background:var(--error-fg)"></span>Rejected</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Document Type (AsReceived_Type / Action2)</div>
+            <div class="flex-wrap">
+              <span style="font-size:.72rem;font-weight:700;background:var(--gray-100);color:var(--gray-700);padding:2px 7px;border-radius:2px">New</span>
+              <span style="font-size:.72rem;font-weight:700;background:var(--review-bg);color:var(--review-fg);padding:2px 7px;border-radius:2px">WRITTEN REV.</span>
+              <span style="font-size:.72rem;font-weight:700;background:var(--error-bg);color:var(--error-fg);padding:2px 7px;border-radius:2px">AMEND</span>
+              <span style="font-size:.72rem;font-weight:700;background:#FFF4CE;color:var(--pending-fg);padding:2px 7px;border-radius:2px">CORR.1</span>
+              <span style="font-size:.72rem;font-weight:700;background:var(--review-bg);color:var(--review-fg);padding:2px 7px;border-radius:2px">ORAL REV.</span>
+              <span style="font-size:.72rem;font-weight:700;background:var(--withdrawn-bg);color:var(--withdrawn-fg);padding:2px 7px;border-radius:2px">WITHDRAWN</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Approval Condition Codes (from CostRates Approvals sheet)</div>
+            <div class="flex-wrap">
+              <span class="token-pill">SR_MANDATE</span>
+              <span class="token-pill">STD_DOC</span>
+              <span class="token-pill">NONSTD_DOC</span>
+              <span class="token-pill">ACCESSIBILITY</span>
+              <span class="token-pill">WEBCASTING</span>
+              <span class="token-pill">AUDIO_REC</span>
+              <span class="token-pill">NON_GVA</span>
+              <span class="token-pill">INTRP_LESSTHAN6</span>
+              <span class="token-pill">POST_GTA_12M_GVA</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">PBI Approval Stages</div>
+            <div class="flex-wrap">
+              <span class="fl-tag dft"><span class="d"></span>Requested</span>
+              <span class="fl-tag warn"><span class="d"></span>Revised Estimate</span>
+              <span class="fl-tag rev"><span class="d"></span>ACABQ</span>
+              <span class="fl-tag ok"><span class="d"></span>GA Approved</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- 7. PANEL + PIVOT TABS (Resolution Detail)                       -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div>
+    <div class="section-header"><span class="fl-label">Panel + Pivot</span> Resolution detail side panel</div>
+    <div class="comp-card">
+      <div class="comp-card-header">
+        <div class="comp-card-title">Slides in from right on row click — Panel width 480px — 5 pivot tabs</div>
+        <span class="fl-label">Panel isOpen={state} · Pivot selectedKey</span>
+      </div>
+      <div class="comp-card-body">
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <div class="fl-panel-preview">
+            <div class="fl-panel-hdr">
+              <div>
+                <h3>A/HRC/56/L.1</h3>
+                <p>Human rights situation in Syria · Section 24</p>
+              </div>
+              <button class="fl-panel-hdr-x">✕</button>
+            </div>
+            <div style="display:flex;gap:0;border-bottom:2px solid var(--gray-200);padding:0 14px;background:var(--white)">
+              <div class="fl-pivot-tab active" style="font-size:.8rem">Details</div>
+              <div class="fl-pivot-tab" style="font-size:.8rem">PBI Costs</div>
+              <div class="fl-pivot-tab" style="font-size:.8rem">Approval</div>
+              <div class="fl-pivot-tab" style="font-size:.8rem">OS</div>
+              <div class="fl-pivot-tab" style="font-size:.8rem">Documents</div>
+            </div>
+            <div class="fl-panel-body" style="padding:14px;font-size:.82rem;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <span class="fl-tag ok"><span class="d"></span>Approved</span>
+                <span class="fl-tag dft"><span class="d"></span>Section 24</span>
+                <span class="fl-tag rev"><span class="d"></span>SR_MANDATE</span>
+                <span style="font-size:.7rem;color:var(--gray-500);margin-left:auto">Created 12 Jan 2024</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div><div style="font-size:.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em">Draft Res No</div><div style="font-size:.8rem;font-weight:600">A/HRC/56/L.1</div></div>
+                <div><div style="font-size:.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em">Adopted Res No</div><div style="font-size:.8rem;font-weight:600">A/HRC/56/1</div></div>
+                <div><div style="font-size:.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em">Session</div><div style="font-size:.8rem">HRC 56 · 2024</div></div>
+                <div><div style="font-size:.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em">Body</div><div style="font-size:.8rem">Human Rights Council</div></div>
+                <div><div style="font-size:.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em">Budget Section</div><div style="font-size:.8rem">Section 24 — OHCHR</div></div>
+                <div><div style="font-size:.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em">BudgetSectionID</div><div style="font-size:.8rem"><code class="inline">S.24_OHCHR</code></div></div>
+                <div style="grid-column:1/-1"><div style="font-size:.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em">DCMPBI</div><div style="font-size:.8rem">Yes — approved by MMS 22 Jan 2024</div></div>
+              </div>
+            </div>
+            <div style="padding:10px 14px;border-top:1px solid var(--gray-200);background:var(--gray-50);display:flex;gap:6px">
+              <button class="fl-btn prim" style="font-size:.8rem;padding:5px 12px">Edit Resolution</button>
+              <button class="fl-btn def" style="font-size:.8rem;padding:5px 12px">Generate OS</button>
+              <button class="fl-btn def" style="font-size:.8rem;padding:5px 12px">Enter PBI</button>
+            </div>
+          </div>
+
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.75rem;font-weight:700;color:var(--gray-700);margin-bottom:8px">Approval Stages tab (Section 24 — OHCHR chain)</div>
+            <div class="fl-stages">
+              <div class="fl-stage-row">
+                <div class="fl-stage-icon done">✓</div>
+                <div><div class="fl-stage-name" style="font-size:.8rem">OHCHR Substantive Staff</div><div class="fl-stage-meta">Approved 14 Jan 2024</div></div>
+              </div>
+              <div class="fl-stage-row">
+                <div class="fl-stage-icon done">✓</div>
+                <div><div class="fl-stage-name" style="font-size:.8rem">PBI Focal Point</div><div class="fl-stage-meta">Approved 15 Jan 2024</div></div>
+              </div>
+              <div class="fl-stage-row">
+                <div class="fl-stage-icon done">✓</div>
+                <div><div class="fl-stage-name" style="font-size:.8rem">OHCHR Finance</div><div class="fl-stage-meta">Approved 16 Jan 2024</div></div>
+              </div>
+              <div class="fl-stage-row">
+                <div class="fl-stage-icon done">✓</div>
+                <div><div class="fl-stage-name" style="font-size:.8rem">PPBD FBO</div><div class="fl-stage-meta">Approved 19 Jan 2024</div></div>
+              </div>
+              <div class="fl-stage-row">
+                <div class="fl-stage-icon done">✓</div>
+                <div><div class="fl-stage-name" style="font-size:.8rem">PPBD OD — Final</div><div class="fl-stage-meta">Approved 22 Jan 2024</div></div>
+              </div>
+            </div>
+            <div style="margin-top:10px;font-size:.72rem;color:var(--gray-500);background:var(--gray-50);border-radius:3px;padding:7px 9px;border:1px solid var(--gray-200)">
+              Chain read at runtime from <code class="inline">CostRatesService → Approvals sheet</code>. Conditions checked: SR_MANDATE, STD_DOC. Return is possible at any stage.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- 8. ADD RESOLUTION FORM (TextField, Dropdown, DatePicker, Toggle) -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div>
+    <div class="section-header"><span class="fl-label">TextField + Dropdown + DatePicker</span> Add/Edit Resolution form fields</div>
+    <div class="comp-card">
+      <div class="comp-card-header">
+        <div class="comp-card-title">AddResolutionWebPart — form fields (populates Resolutions Document Set)</div>
+        <span class="fl-label">useForm state → DataService.createItem() / updateItem()</span>
+      </div>
+      <div class="comp-card-body">
+        <div class="three-col">
+          <div>
+            <div class="fl-field">
+              <label class="fl-field-label required">Draft Resolution No</label>
+              <input class="fl-textfield" type="text" value="A/HRC/56/L.1" placeholder="e.g. A/HRC/56/L.1" />
+              <div style="font-size:.7rem;color:var(--gray-500);margin-top:3px">DraftRes column · used as Document Set name</div>
+            </div>
+            <div class="fl-field">
+              <label class="fl-field-label">Adopted Resolution No</label>
+              <input class="fl-textfield" type="text" placeholder="e.g. A/HRC/56/1 (filled after adoption)" />
+            </div>
+            <div class="fl-field">
+              <label class="fl-field-label required">Session</label>
+              <input class="fl-textfield" type="text" value="HRC 56" placeholder="e.g. HRC 56" />
+            </div>
+          </div>
+          <div>
+            <div class="fl-field">
+              <label class="fl-field-label required">Session Year</label>
+              <select class="fl-dropdown" style="width:100%;height:32px;padding:0 24px 0 8px">
+                <option>2024</option><option selected>2025</option><option>2026</option>
+              </select>
+            </div>
+            <div class="fl-field">
+              <label class="fl-field-label required">Intergovernmental Body</label>
+              <select class="fl-dropdown" style="width:100%;height:32px;padding:0 24px 0 8px">
+                <option selected>Human Rights Council</option>
+                <option>General Assembly</option>
+                <option>Security Council</option>
+              </select>
+            </div>
+            <div class="fl-field">
+              <label class="fl-field-label required">Budget Section</label>
+              <select class="fl-dropdown" style="width:100%;height:32px;padding:0 24px 0 8px">
+                <option>Section 2 — DGACM</option>
+                <option selected>Section 24 — OHCHR</option>
+                <option>Section 8 — OLA</option>
+                <option>Section 29E — UNOG</option>
+                <option>Section 34 — DSS</option>
+              </select>
+              <div style="font-size:.7rem;color:var(--gray-500);margin-top:3px">Drives PBI form type via SummaryTable sheet</div>
+            </div>
+          </div>
+          <div>
+            <div class="fl-field">
+              <label class="fl-field-label required">Resolution Title</label>
+              <textarea class="fl-textarea" rows="2" placeholder="Full title of the resolution">Human rights situation in the Syrian Arab Republic</textarea>
+            </div>
+            <div class="fl-field">
+              <label class="fl-field-label">Operative Paragraphs (OPPara)</label>
+              <textarea class="fl-textarea" rows="2" placeholder="Parsed by Azure Function /api/parser — populated automatically"></textarea>
+              <div style="font-size:.7rem;color:var(--gray-500);margin-top:3px">Auto-populated via <code class="inline">/api/parser</code> · editable by OHCHR Substantive Staff</div>
+            </div>
+            <div class="fl-field" style="display:flex;gap:10px;align-items:center">
+              <div>
+                <div class="fl-field-label" style="display:block;margin-bottom:0">Type of File</div>
+                <div style="font-size:.7rem;color:var(--gray-500)">Set by ingestion flow</div>
+              </div>
+              <input class="fl-textfield readonly" type="text" value="Received by Flow" readonly style="width:160px" />
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-200);display:flex;gap:8px">
+          <button class="fl-btn prim">Save Resolution</button>
+          <button class="fl-btn def">Save as Draft</button>
+          <button class="fl-btn ghost">Cancel</button>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <div class="fl-spinner">
+              <div class="fl-spinner-ring"></div>
+              <span>Saving to SharePoint…</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- 9. PERSONA + User context                                       -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div>
+    <div class="section-header"><span class="fl-label">Persona</span> User context and group membership</div>
+    <div class="comp-card">
+      <div class="comp-card-body">
+        <div style="display:flex;gap:24px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Current User (DataService.getUser())</div>
+            <div class="fl-persona">
+              <div class="fl-persona-avatar" style="background:#0078D4">PP</div>
+              <div>
+                <div class="fl-persona-name">Pritam Pawar</div>
+                <div class="fl-persona-secondary">MRMS Owner · pritam.pawar2@un.org</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">SharePoint Groups (getUserGroups())</div>
+            <div class="flex-wrap">
+              <span class="fl-tag ok"><span class="d"></span>Site Owners</span>
+              <span class="fl-tag rev"><span class="d"></span>OHCHR Focal Point</span>
+              <span class="fl-tag rev"><span class="d"></span>PPBD</span>
+            </div>
+            <div style="font-size:.7rem;color:var(--gray-500);margin-top:6px">
+              Groups determine: visible action buttons (Generate OS, Approve/Return), editable fields, visible PBI sections
+            </div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">PermissionCheck Extension (Top Placeholder)</div>
+            <div style="background:var(--un-blue-100);border-left:3px solid var(--un-blue-500);padding:7px 10px;font-size:.8rem;color:var(--un-blue-700);border-radius:3px;display:flex;align-items:center;gap:8px">
+              <span style="background:var(--un-gold);color:var(--white);font-size:.65rem;font-weight:800;padding:2px 6px;border-radius:2px">STAGE</span>
+              Logged in as: <strong>Pritam Pawar</strong> · Role: <strong>MRMS Owner</strong>
+            </div>
+            <div style="font-size:.7rem;color:var(--gray-500);margin-top:4px">Reads SitePermissions list → redirects unauthorised users from restricted pages</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- 10. SPINNER + ERROR STATE                                        -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div>
+    <div class="section-header"><span class="fl-label">Spinner + MessageBar</span> Loading and error states</div>
+    <div class="comp-card">
+      <div class="comp-card-body">
+        <div class="three-col">
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+            <div style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Loading states</div>
+            <div class="fl-spinner"><div class="fl-spinner-ring"></div><span>Loading resolutions…</span></div>
+            <div class="fl-spinner" style="font-size:.8rem"><div class="fl-spinner-ring" style="width:18px;height:18px;border-width:2px"></div><span>Generating Oral Statement via Azure Function…</span></div>
+            <div class="fl-spinner" style="font-size:.8rem"><div class="fl-spinner-ring" style="width:18px;height:18px;border-width:2px"></div><span>Parsing OPs via /api/parser…</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Error states (logged to ErrorLogs list)</div>
+            <div class="fl-msgbar" style="background:var(--error-bg);border-left:3px solid var(--error-fg);color:var(--error-fg);font-size:.8rem">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <div>Failed to load resolutions. <code class="inline">DataService.getData()</code> returned 503. Error logged to SharePoint ErrorLogs list.</div>
+            </div>
+            <div class="fl-msgbar" style="background:var(--error-bg);border-left:3px solid var(--error-fg);color:var(--error-fg);font-size:.8rem">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <div>MISC form keeps loading. Azure Function <code class="inline">/api/generate_os_files</code> timeout — KI: MRMS-2582.</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">ErrorLogs list columns</div>
+            <table style="width:100%;border-collapse:collapse;font-size:.75rem">
+              <tr style="background:var(--gray-50)"><th style="padding:4px 6px;text-align:left;border:1px solid var(--gray-200)">Column</th><th style="padding:4px 6px;text-align:left;border:1px solid var(--gray-200)">Value</th></tr>
+              <tr><td style="padding:4px 6px;border:1px solid var(--gray-200)">WebPart</td><td style="padding:4px 6px;border:1px solid var(--gray-200)">Section2 / MiscellaneousWebPart</td></tr>
+              <tr><td style="padding:4px 6px;border:1px solid var(--gray-200)">Severity</td><td style="padding:4px 6px;border:1px solid var(--gray-200)">Error / Warning / Info</td></tr>
+              <tr><td style="padding:4px 6px;border:1px solid var(--gray-200)">ResolutionID</td><td style="padding:4px 6px;border:1px solid var(--gray-200)">A/HRC/56/L.1</td></tr>
+              <tr><td style="padding:4px 6px;border:1px solid var(--gray-200)">StackTrace</td><td style="padding:4px 6px;border:1px solid var(--gray-200)">Full JS stack</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.page -->
+</body>
+</html>

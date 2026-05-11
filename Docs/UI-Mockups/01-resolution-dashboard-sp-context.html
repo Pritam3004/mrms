@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MRMS — Resolution Dashboard in SharePoint Context</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* === UN / MRMS Design Tokens === */
+      --un-blue-900: #0A2240;
+      --un-blue-700: #1A4A7C;
+      --un-blue-500: #009EDB;
+      --un-blue-300: #4FC3F7;
+      --un-blue-100: #E1F4FB;
+      --un-gold:     #C89520;
+      --un-gold-bg:  #FFF8E1;
+      --gray-900: #1E1E1E;
+      --gray-700: #3B3B3B;
+      --gray-500: #616161;
+      --gray-300: #BDBDBD;
+      --gray-100: #F4F4F4;
+      --gray-50:  #FAFAFA;
+      --white:    #FFFFFF;
+      --sp-theme: #0078D4;          /* SharePoint M365 Fluent blue */
+      --sp-suite: #1B1A19;          /* M365 Suite bar charcoal */
+
+      /* Semantic */
+      --approved-fg: #107C10; --approved-bg: #DFF6DD;
+      --pending-fg:  #C05000; --pending-bg:  #FFF4CE;
+      --draft-fg:    #1A4A7C; --draft-bg:    #EFF6FC;
+      --review-fg:   #5C2E91; --review-bg:   #F4EDF9;
+      --error-fg:    #A4262C; --error-bg:    #FDE7E9;
+      --withdrawn-fg:#605E5C; --withdrawn-bg:#F3F2F1;
+
+      --font: 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
+      --radius-sm: 3px; --radius-md: 6px; --radius-lg: 10px;
+      --shadow-card: 0 1.6px 3.6px rgba(0,0,0,.13), 0 0.3px 0.9px rgba(0,0,0,.10);
+      --shadow-panel: 0 0 25px rgba(0,0,0,.2);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 14px; background: #F3F2F1; }
+    body { font-family: var(--font); color: var(--gray-900); min-height: 100vh; }
+
+    /* ─── M365 SUITE BAR ────────────────────────────────────── */
+    .m365-suite {
+      height: 48px;
+      background: var(--sp-suite);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+      position: sticky; top: 0; z-index: 200;
+    }
+    .suite-waffle {
+      width: 36px; height: 36px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 3px; cursor: pointer; border-radius: var(--radius-sm);
+      transition: background .12s;
+    }
+    .suite-waffle:hover { background: rgba(255,255,255,.1); }
+    .suite-waffle-row { display: flex; gap: 3px; }
+    .suite-waffle-dot { width: 5px; height: 5px; background: var(--white); border-radius: 1px; }
+    .suite-logo {
+      color: var(--white); font-size: 15px; font-weight: 600;
+      letter-spacing: -.01em; padding: 0 4px;
+    }
+    .suite-logo span { color: #9FD9F6; font-weight: 300; }
+    .suite-search {
+      flex: 1; max-width: 440px; margin: 0 auto;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 3px;
+      display: flex; align-items: center; gap: 8px;
+      padding: 4px 10px; color: rgba(255,255,255,.8); font-size: .875rem;
+    }
+    .suite-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+    .suite-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,.9); cursor: pointer;
+      transition: background .12s;
+    }
+    .suite-icon:hover { background: rgba(255,255,255,.1); }
+    .suite-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #0078D4; color: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700; cursor: pointer;
+      border: 2px solid rgba(255,255,255,.2);
+    }
+
+    /* ─── SP SITE TOP NAV ───────────────────────────────────── */
+    .sp-topnav {
+      height: 48px;
+      background: var(--un-blue-900);
+      display: flex; align-items: center;
+      padding: 0 24px; gap: 0;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      position: sticky; top: 48px; z-index: 190;
+    }
+    .sp-topnav-sitename {
+      color: var(--white); font-size: 1rem; font-weight: 600;
+      padding-right: 24px; border-right: 1px solid rgba(255,255,255,.15);
+      white-space: nowrap; letter-spacing: .01em;
+    }
+    .sp-topnav-sitename small {
+      display: block; color: var(--un-blue-300);
+      font-size: .7rem; font-weight: 400; letter-spacing: .06em; text-transform: uppercase;
+    }
+    .sp-topnav-links { display: flex; gap: 2px; padding-left: 16px; }
+    .sp-topnav-link {
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      color: rgba(255,255,255,.82); font-size: .875rem; font-weight: 500;
+      cursor: pointer; transition: background .12s, color .12s;
+      white-space: nowrap; text-decoration: none;
+      border-bottom: 2px solid transparent;
+    }
+    .sp-topnav-link:hover { background: rgba(255,255,255,.1); color: var(--white); }
+    .sp-topnav-link.active { color: var(--white); border-bottom-color: var(--un-blue-300); }
+    .sp-topnav-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+    .sp-topnav-btn {
+      padding: 5px 12px; border-radius: var(--radius-sm);
+      font-size: .8rem; font-weight: 600; cursor: pointer;
+      border: 1.5px solid rgba(255,255,255,.4); color: var(--white);
+      background: transparent; transition: background .12s;
+    }
+    .sp-topnav-btn:hover { background: rgba(255,255,255,.1); }
+    .sp-topnav-btn.primary {
+      background: var(--un-blue-500); border-color: var(--un-blue-500);
+    }
+    .sp-topnav-btn.primary:hover { background: var(--un-blue-300); border-color: var(--un-blue-300); }
+
+    /* ─── SP PERMISSION BANNER (Application Customizer — Top Placeholder) ── */
+    .sp-permission-banner {
+      background: var(--un-blue-100);
+      border-bottom: 1px solid #B3D7EC;
+      padding: 5px 24px;
+      font-size: .8rem;
+      color: var(--un-blue-700);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sp-permission-banner .env-badge {
+      background: var(--un-gold); color: var(--white);
+      font-size: .65rem; font-weight: 800; padding: 2px 7px;
+      border-radius: 2px; letter-spacing: .08em; text-transform: uppercase;
+    }
+
+    /* ─── SP PAGE CANVAS ────────────────────────────────────── */
+    .sp-canvas {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    /* ─── SP PAGE TITLE AREA ────────────────────────────────── */
+    .sp-page-title {
+      background: var(--white);
+      padding: 20px 32px 16px;
+      border-bottom: 1px solid #EDEBE9;
+    }
+    .sp-page-title h1 {
+      font-size: 1.7rem; font-weight: 700;
+      color: var(--gray-900); line-height: 1.2;
+    }
+    .sp-page-title p {
+      color: var(--gray-500); font-size: .875rem; margin-top: 4px;
+    }
+
+    /* ─── SPFx WEBPART ZONE (full-width section) ────────────── */
+    .spfx-zone {
+      padding: 12px 32px 32px;
+    }
+    /* Visual annotation to show what SharePoint owns vs SPFx */
+    .spfx-label {
+      font-size: .7rem; font-weight: 700; color: var(--gray-500);
+      text-transform: uppercase; letter-spacing: .1em;
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 6px; padding-left: 2px;
+    }
+    .spfx-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: repeating-linear-gradient(90deg, #BDBDBD 0 4px, transparent 4px 8px);
+    }
+
+    /* ╔══════════════════════════════════════════════════╗
+       ║   SPFx WEBPART — Resolution Dashboard (Section2) ║
+       ╚══════════════════════════════════════════════════╝ */
+    .wp-root {
+      background: var(--gray-50);
+      border: 1px solid #EDEBE9;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      font-family: var(--font);
+    }
+
+    /* Fluent UI CommandBar equivalent */
+    .wp-commandbar {
+      height: 44px;
+      background: var(--white);
+      border-bottom: 1px solid #EDEBE9;
+      display: flex; align-items: center;
+      padding: 0 16px; gap: 4px;
+    }
+    .cb-btn {
+      height: 32px; padding: 0 10px;
+      display: flex; align-items: center; gap: 6px;
+      border: none; background: transparent;
+      font-family: var(--font); font-size: .875rem;
+      font-weight: 500; color: var(--gray-700);
+      border-radius: var(--radius-sm); cursor: pointer;
+      transition: background .1s, color .1s;
+      white-space: nowrap;
+    }
+    .cb-btn:hover { background: #F3F2F1; }
+    .cb-btn.primary {
+      background: var(--un-blue-500); color: var(--white);
+    }
+    .cb-btn.primary:hover { background: var(--un-blue-700); }
+    .cb-btn svg { flex-shrink: 0; opacity: .75; }
+    .cb-btn.primary svg { opacity: 1; }
+    .cb-divider { width: 1px; height: 20px; background: #EDEBE9; margin: 0 4px; }
+    .cb-right { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+
+    /* Fluent UI SearchBox equivalent */
+    .wp-searchbox {
+      display: flex; align-items: center; gap: 6px;
+      height: 32px; padding: 0 10px;
+      border: 1px solid #8A8886; border-radius: var(--radius-sm);
+      background: var(--white); width: 220px;
+      transition: border-color .1s, box-shadow .1s;
+    }
+    .wp-searchbox:focus-within {
+      border-color: var(--sp-theme);
+      box-shadow: 0 0 0 1px var(--sp-theme);
+    }
+    .wp-searchbox input {
+      background: transparent; border: none; outline: none;
+      font-family: var(--font); font-size: .875rem; color: var(--gray-900);
+      width: 100%;
+    }
+    .wp-searchbox input::placeholder { color: #A19F9D; }
+
+    /* ─── KPI SUMMARY ROW ───────────────────────────────────── */
+    .wp-summary {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      padding: 16px;
+      background: var(--white);
+      border-bottom: 1px solid #EDEBE9;
+    }
+    .kpi {
+      background: var(--gray-50);
+      border: 1px solid #EDEBE9;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+      transition: box-shadow .15s;
+    }
+    .kpi:hover { box-shadow: var(--shadow-card); }
+    .kpi-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+    .kpi-accent.blue   { background: var(--un-blue-500); }
+    .kpi-accent.green  { background: var(--approved-fg); }
+    .kpi-accent.amber  { background: var(--pending-fg); }
+    .kpi-accent.purple { background: var(--review-fg); }
+    .kpi-accent.gold   { background: var(--un-gold); }
+    .kpi-label {
+      font-size: .7rem; font-weight: 700; color: var(--gray-500);
+      text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px;
+    }
+    .kpi-value { font-size: 1.9rem; font-weight: 700; color: var(--gray-900); line-height: 1; }
+    .kpi-sub { font-size: .75rem; color: var(--gray-500); margin-top: 3px; }
+    .kpi-sub.up   { color: var(--approved-fg); }
+    .kpi-sub.down { color: var(--error-fg); }
+
+    /* ─── FILTER / PIVOT BAR ────────────────────────────────── */
+    .wp-filters {
+      background: var(--white);
+      border-bottom: 1px solid #EDEBE9;
+      padding: 10px 16px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .f-label { font-size: .75rem; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: .08em; white-space: nowrap; }
+    .f-select {
+      height: 30px; padding: 0 26px 0 8px;
+      border: 1px solid #8A8886; border-radius: var(--radius-sm);
+      font: .8125rem/1 var(--font); color: var(--gray-900);
+      background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23605E5C'/%3E%3C/svg%3E") no-repeat right 8px center;
+      appearance: none; cursor: pointer; outline: none;
+    }
+    .f-select:focus { border-color: var(--sp-theme); box-shadow: 0 0 0 1px var(--sp-theme); }
+
+    /* Fluent Pivot-style status tabs */
+    .pivot { display: flex; border-bottom: none; gap: 2px; margin-left: auto; }
+    .pivot-item {
+      padding: 4px 12px; border-radius: 2px;
+      font-size: .8125rem; font-weight: 500; cursor: pointer;
+      border: 1px solid transparent; color: var(--gray-700);
+      transition: all .1s; white-space: nowrap;
+    }
+    .pivot-item:hover { background: #F3F2F1; }
+    .pivot-item.active { border-color: var(--sp-theme); color: var(--sp-theme); background: #EFF6FC; font-weight: 600; }
+    .pivot-count {
+      display: inline-block; background: var(--sp-theme); color: var(--white);
+      font-size: .65rem; font-weight: 800; padding: 1px 5px; border-radius: 10px; margin-left: 4px;
+    }
+    .pivot-item.active .pivot-count { background: var(--sp-theme); }
+    .pivot-item:not(.active) .pivot-count { background: var(--gray-300); }
+
+    /* Alert bar */
+    .wp-alert {
+      margin: 12px 16px 0;
+      background: var(--un-gold-bg);
+      border: 1px solid #EDD366;
+      border-left: 4px solid var(--un-gold);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: .8rem; color: #5D4309;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .wp-alert svg { flex-shrink: 0; margin-top: 1px; color: var(--un-gold); }
+    .wp-alert a { color: var(--un-blue-700); font-weight: 600; }
+
+    /* ─── FLUENT DetailsList EQUIVALENT ─────────────────────── */
+    .wp-table-wrap { overflow-x: auto; }
+    .detail-list { width: 100%; border-collapse: collapse; }
+    .detail-list thead tr {
+      background: var(--white);
+      border-bottom: 1px solid #EDEBE9;
+    }
+    .detail-list th {
+      padding: 8px 12px;
+      font-size: .75rem; font-weight: 700;
+      color: var(--gray-500); text-transform: uppercase;
+      letter-spacing: .07em; text-align: left;
+      white-space: nowrap; user-select: none;
+    }
+    .detail-list th.sortable { cursor: pointer; }
+    .detail-list th.sortable:hover { color: var(--sp-theme); background: #F3F2F1; }
+    .detail-list th.sorted { color: var(--sp-theme); }
+    .detail-list th input[type="checkbox"], .detail-list td input[type="checkbox"] {
+      width: 16px; height: 16px; accent-color: var(--sp-theme); cursor: pointer;
+    }
+    .detail-list tbody tr {
+      border-bottom: 1px solid #F3F2F1;
+      background: var(--white);
+      transition: background .08s;
+    }
+    .detail-list tbody tr:hover { background: #F3F2F1; }
+    .detail-list tbody tr.selected { background: #EFF6FC; }
+    .detail-list td { padding: 9px 12px; font-size: .875rem; vertical-align: middle; }
+
+    /* Column: Draft Res No (link) */
+    .res-link { color: var(--sp-theme); font-weight: 600; font-size: .875rem; cursor: pointer; text-decoration: none; white-space: nowrap; }
+    .res-link:hover { text-decoration: underline; color: var(--un-blue-700); }
+
+    /* Column: Title + sub-label */
+    .res-title { font-weight: 500; max-width: 280px; }
+    .res-subtitle { font-size: .75rem; color: var(--gray-500); margin-top: 2px; }
+
+    /* Resolution type tag */
+    .type-tag {
+      font-size: .7rem; font-weight: 700; padding: 1px 6px;
+      border-radius: 2px; display: inline-block; margin-left: 4px;
+    }
+    .type-amendment  { background: #FDE7E9; color: var(--error-fg); }
+    .type-correction { background: var(--un-gold-bg); color: #5D4309; }
+    .type-withdrawal { background: #F3F2F1; color: var(--gray-700); }
+    .type-revision   { background: var(--review-bg); color: var(--review-fg); }
+
+    /* Status badge — matches Fluent Tag */
+    .fl-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 2px;
+      font-size: .75rem; font-weight: 600; white-space: nowrap;
+    }
+    .fl-badge .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .fl-badge.approved  { background: var(--approved-bg); color: var(--approved-fg); } .fl-badge.approved .dot { background: var(--approved-fg); }
+    .fl-badge.pending   { background: var(--pending-bg);  color: var(--pending-fg);  } .fl-badge.pending .dot  { background: var(--pending-fg); }
+    .fl-badge.draft     { background: var(--draft-bg);    color: var(--draft-fg);    } .fl-badge.draft .dot    { background: var(--draft-fg); }
+    .fl-badge.review    { background: var(--review-bg);   color: var(--review-fg);   } .fl-badge.review .dot   { background: var(--review-fg); }
+    .fl-badge.withdrawn { background: var(--withdrawn-bg);color: var(--withdrawn-fg);} .fl-badge.withdrawn .dot{ background: var(--withdrawn-fg); }
+
+    /* Approval progress */
+    .ap-cell { display: flex; align-items: center; gap: 8px; }
+    .ap-bar { width: 64px; height: 4px; background: #EDEBE9; border-radius: 2px; overflow: hidden; }
+    .ap-fill { height: 100%; background: var(--sp-theme); border-radius: 2px; }
+    .ap-fill.complete { background: var(--approved-fg); }
+    .ap-text { font-size: .75rem; color: var(--gray-500); white-space: nowrap; }
+
+    /* Action buttons (hover) */
+    .row-actions { display: flex; gap: 2px; opacity: 0; transition: opacity .1s; }
+    .detail-list tbody tr:hover .row-actions { opacity: 1; }
+    .row-btn {
+      width: 28px; height: 28px; padding: 0;
+      background: transparent; border: none; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gray-500); cursor: pointer; transition: background .1s, color .1s;
+    }
+    .row-btn:hover { background: #E1DFDD; color: var(--gray-900); }
+
+    /* ─── PAGINATION ────────────────────────────────────────── */
+    .wp-pager {
+      background: var(--white);
+      border-top: 1px solid #EDEBE9;
+      padding: 8px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: .8rem; color: var(--gray-500);
+    }
+    .pager-btns { display: flex; gap: 2px; }
+    .pg-btn {
+      width: 28px; height: 28px;
+      border: 1px solid transparent; background: transparent;
+      border-radius: var(--radius-sm); font-size: .8rem; cursor: pointer;
+      color: var(--gray-700); display: flex; align-items: center; justify-content: center;
+      transition: background .1s;
+    }
+    .pg-btn:hover { background: #F3F2F1; }
+    .pg-btn.active { border-color: var(--sp-theme); color: var(--sp-theme); font-weight: 700; }
+    .pg-btn:disabled { opacity: .4; cursor: default; }
+
+    /* ─── FLUENT PANEL (slide-in, replaces detail panel) ────── */
+    .panel-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4); z-index: 300;
+      display: none;
+    }
+    .panel-overlay.open { display: block; animation: fadeIn .18s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .fluent-panel {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 480px; background: var(--white);
+      box-shadow: var(--shadow-panel); z-index: 301;
+      display: flex; flex-direction: column;
+      transform: translateX(105%);
+      transition: transform .22s cubic-bezier(.4,0,.2,1);
+    }
+    .fluent-panel.open { transform: translateX(0); }
+
+    .panel-header {
+      padding: 20px 24px 16px;
+      background: var(--un-blue-900);
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .panel-header-text { flex: 1; }
+    .panel-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--white); }
+    .panel-header p  { font-size: .8rem; color: rgba(255,255,255,.7); margin-top: 2px; }
+    .panel-close {
+      background: transparent; border: none; color: rgba(255,255,255,.8);
+      font-size: 20px; cursor: pointer; line-height: 1;
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-sm); transition: background .1s;
+    }
+    .panel-close:hover { background: rgba(255,255,255,.1); color: var(--white); }
+
+    /* Fluent Pivot inside panel */
+    .panel-pivot {
+      display: flex; border-bottom: 2px solid #EDEBE9;
+      background: var(--white); padding: 0 16px;
+    }
+    .pp-tab {
+      padding: 10px 14px; font-size: .875rem; font-weight: 500;
+      color: var(--gray-500); cursor: pointer; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; transition: color .1s;
+    }
+    .pp-tab.active { color: var(--sp-theme); border-bottom-color: var(--sp-theme); font-weight: 600; }
+    .pp-tab:hover:not(.active) { color: var(--gray-900); }
+
+    .panel-body { flex: 1; overflow-y: auto; padding: 16px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+    .pf-section-title {
+      font-size: .7rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--gray-500);
+      padding-bottom: 6px; border-bottom: 1px solid #EDEBE9; margin-bottom: 8px;
+    }
+    .pf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+    .pf-grid.single { grid-template-columns: 1fr; }
+    .pf-label { font-size: .7rem; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
+    .pf-value { font-size: .875rem; color: var(--gray-900); font-weight: 500; }
+
+    /* Approval stages — Fluent ProgressIndicator-style */
+    .stage-list { display: flex; flex-direction: column; gap: 0; }
+    .stage-item {
+      display: flex; align-items: flex-start; gap: 12px; padding: 10px 0;
+      border-bottom: 1px solid #F3F2F1; position: relative;
+    }
+    .stage-item:last-child { border-bottom: none; }
+    .stage-icon {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 800; margin-top: 1px;
+    }
+    .stage-icon.done     { background: var(--approved-bg); color: var(--approved-fg); }
+    .stage-icon.current  { background: var(--pending-bg);  color: var(--pending-fg); border: 2px solid var(--pending-fg); }
+    .stage-icon.upcoming { background: #F3F2F1; color: var(--gray-300); border: 2px solid #EDEBE9; }
+    .stage-name { font-size: .875rem; font-weight: 600; color: var(--gray-900); }
+    .stage-meta { font-size: .75rem; color: var(--gray-500); margin-top: 1px; }
+
+    /* PBI cost breakdown table */
+    .cost-table { width: 100%; font-size: .8rem; border-collapse: collapse; }
+    .cost-table th { padding: 6px 8px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; font-size: .7rem; letter-spacing: .07em; border-bottom: 1px solid #EDEBE9; text-align: left; }
+    .cost-table td { padding: 7px 8px; border-bottom: 1px solid #F3F2F1; }
+    .cost-table tr:last-child td { border-bottom: none; font-weight: 700; border-top: 1px solid #EDEBE9; }
+    .cost-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    .panel-footer {
+      padding: 12px 24px;
+      border-top: 1px solid #EDEBE9;
+      background: #F3F2F1;
+      display: flex; gap: 8px;
+    }
+    .f-btn {
+      padding: 6px 14px; border-radius: var(--radius-sm);
+      font: 600 .875rem var(--font); cursor: pointer;
+      border: 1px solid transparent; transition: all .1s;
+    }
+    .f-btn.primary { background: var(--sp-theme); color: var(--white); border-color: var(--sp-theme); }
+    .f-btn.primary:hover { background: var(--un-blue-700); border-color: var(--un-blue-700); }
+    .f-btn.default { background: var(--white); color: var(--gray-900); border-color: #8A8886; }
+    .f-btn.default:hover { background: #F3F2F1; }
+    .f-btn.ghost { background: transparent; color: var(--gray-700); border-color: transparent; margin-left: auto; }
+    .f-btn.ghost:hover { background: #EDEBE9; }
+
+    /* Design annotation */
+    .anno {
+      position: fixed; bottom: 16px; left: 16px;
+      background: var(--gray-900); color: var(--white);
+      padding: 8px 14px; border-radius: var(--radius-md);
+      font-size: .7rem; line-height: 1.5; max-width: 240px;
+      box-shadow: var(--shadow-panel); z-index: 99;
+    }
+    .anno strong { color: #9FD9F6; }
+    .anno .sp-owns { color: #FFD966; font-weight: 600; }
+    .anno .wp-owns { color: #9FD9F6; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<!-- ================================================================
+     M365 SUITE BAR  (Microsoft 365 — not customisable by MRMS)
+================================================================ -->
+<div class="m365-suite" role="banner" aria-label="Microsoft 365 suite bar">
+  <div class="suite-waffle" aria-label="App launcher" title="App launcher">
+    <div class="suite-waffle-row"><div class="suite-waffle-dot"></div><div class="suite-waffle-dot"></div><div class="suite-waffle-dot"></div></div>
+    <div class="suite-waffle-row"><div class="suite-waffle-dot"></div><div class="suite-waffle-dot"></div><div class="suite-waffle-dot"></div></div>
+    <div class="suite-waffle-row"><div class="suite-waffle-dot"></div><div class="suite-waffle-dot"></div><div class="suite-waffle-dot"></div></div>
+  </div>
+  <div class="suite-logo">Microsoft <span>365</span></div>
+  <div class="suite-search" role="search" aria-label="Microsoft 365 search">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="6.5" cy="6.5" r="5" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+      <path d="M10.5 10.5l3.5 3.5" stroke="rgba(255,255,255,.5)" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span style="color:rgba(255,255,255,.5);font-size:.8rem">Search</span>
+  </div>
+  <div class="suite-right">
+    <div class="suite-icon" title="Notifications" aria-label="Notifications">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
+    <div class="suite-icon" title="Settings" aria-label="Settings">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 19.07l1.41-1.41M12 2v2m0 18v-2m10-8h-2M2 12h2m14.14 5.14l1.41 1.41M4.93 4.93L6.34 6.34"/></svg>
+    </div>
+    <div class="suite-icon" title="Help" aria-label="Help">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div class="suite-avatar" title="Pritam Pawar" aria-label="User: Pritam Pawar">PP</div>
+  </div>
+</div>
+
+<!-- ================================================================
+     SP COMMUNICATION SITE — TOP NAVIGATION  (SharePoint-owned)
+================================================================ -->
+<nav class="sp-topnav" aria-label="Site navigation">
+  <div class="sp-topnav-sitename">
+    MRMS
+    <small>Mandate Review &amp; Management System</small>
+  </div>
+  <div class="sp-topnav-links">
+    <a class="sp-topnav-link active" href="#">Resolutions</a>
+    <a class="sp-topnav-link" href="#">Mandates</a>
+    <a class="sp-topnav-link" href="#">PBI Forms</a>
+    <a class="sp-topnav-link" href="#">Reports</a>
+    <a class="sp-topnav-link" href="#">Revised Estimates</a>
+    <a class="sp-topnav-link" href="#">User Management</a>
+  </div>
+  <div class="sp-topnav-right">
+    <button class="sp-topnav-btn">Export</button>
+    <button class="sp-topnav-btn primary" onclick="openPanel()">+ Add Resolution</button>
+  </div>
+</nav>
+
+<!-- ================================================================
+     PermissionCheckApplicationCustomizer — Top Placeholder
+     (SPFx Application Extension — thin strip injected into SP Top)
+================================================================ -->
+<div class="sp-permission-banner" role="status" aria-live="polite">
+  <span class="env-badge">STAGE</span>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  You are accessing the <strong>Stage / DEV environment</strong>.
+  &nbsp;|&nbsp; Logged in as: <strong>Pritam Pawar</strong> &nbsp;|&nbsp; Role: <strong>MRMS Owner</strong>
+</div>
+
+<!-- ================================================================
+     SP PAGE CANVAS
+================================================================ -->
+<div class="sp-canvas">
+
+  <!-- SP Page Title (set by SharePoint page author) -->
+  <div class="sp-page-title">
+    <h1>Resolution Dashboard</h1>
+    <p>Human Rights Council &amp; General Assembly resolutions managed by MRMS · Session 2024–2026</p>
+  </div>
+
+  <!-- SPFx Webpart Zone -->
+  <div class="spfx-zone">
+    <div class="spfx-label" aria-hidden="true">SPFx Webpart — Section2WebPart (MRMS-Forms v2.0.0.0)</div>
+
+    <!-- ============================================================
+         SPFx WEBPART ROOT  (.wp-root  == webpart outer container)
+         Everything below this line is owned and styled by SPFx code
+    ============================================================ -->
+    <div class="wp-root" role="main" aria-label="Resolution Dashboard webpart">
+
+      <!-- Fluent UI CommandBar -->
+      <div class="wp-commandbar" role="toolbar" aria-label="Dashboard actions">
+        <button class="cb-btn primary" onclick="openPanel()" aria-label="Add new resolution">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Resolution
+        </button>
+        <div class="cb-divider" aria-hidden="true"></div>
+        <button class="cb-btn" aria-label="Bulk upload resolutions">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          Bulk Upload
+        </button>
+        <button class="cb-btn" aria-label="Export resolutions to Excel">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export to Excel
+        </button>
+        <button class="cb-btn" aria-label="Refresh data">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.01"/></svg>
+          Refresh
+        </button>
+        <div class="cb-right">
+          <div class="wp-searchbox" role="search">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="6.5" cy="6.5" r="5" stroke="#A19F9D" stroke-width="1.5"/>
+              <path d="M10.5 10.5l3.5 3.5" stroke="#A19F9D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="search" placeholder="Search resolutions…" aria-label="Search resolutions" />
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Summary Row -->
+      <div class="wp-summary" role="region" aria-label="Summary statistics">
+        <div class="kpi">
+          <div class="kpi-accent blue"></div>
+          <div class="kpi-label">Total Resolutions</div>
+          <div class="kpi-value">463</div>
+          <div class="kpi-sub up">↑ 12 this session</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-accent green"></div>
+          <div class="kpi-label">Fully Approved</div>
+          <div class="kpi-value">289</div>
+          <div class="kpi-sub">62% of total</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-accent amber"></div>
+          <div class="kpi-label">Pending Approval</div>
+          <div class="kpi-value">94</div>
+          <div class="kpi-sub down">↑ 8 from last week</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-accent purple"></div>
+          <div class="kpi-label">PBI Entry / Draft</div>
+          <div class="kpi-value">57</div>
+          <div class="kpi-sub">12% of total</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-accent gold"></div>
+          <div class="kpi-label">Total PBI Cost (est.)</div>
+          <div class="kpi-value" style="font-size:1.5rem">$41.2M</div>
+          <div class="kpi-sub up">↑ $1.4M this sprint</div>
+        </div>
+      </div>
+
+      <!-- Alert: stale approvals -->
+      <div class="wp-alert" role="alert">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <strong>3 resolutions</strong> are awaiting PBI cost entry for more than 14 days — including
+          <strong>A/HRC/56/L.11</strong> (OHCHR), <strong>A/HRC/56/L.22</strong> (Conference Services).
+          <a href="#" style="margin-left:6px">Review →</a>
+        </div>
+      </div>
+
+      <!-- Filter / Pivot bar -->
+      <div class="wp-filters" role="search" aria-label="Filter controls">
+        <span class="f-label">Filter</span>
+
+        <select class="f-select" aria-label="Session">
+          <option>All Sessions</option>
+          <option selected>HRC 56 (2024)</option>
+          <option>HRC 57 (2024)</option>
+          <option>GA 79 (2025)</option>
+          <option>GA 80 (2026)</option>
+        </select>
+
+        <select class="f-select" aria-label="Intergovernmental Body">
+          <option>All Bodies</option>
+          <option selected>Human Rights Council</option>
+          <option>General Assembly</option>
+          <option>Security Council</option>
+        </select>
+
+        <select class="f-select" aria-label="Budget Section">
+          <option>All Sections</option>
+          <option>Section 2 — DGACM</option>
+          <option>Section 24 — OHCHR</option>
+          <option>Section 8 — OLA</option>
+          <option>Section 28 — DGC</option>
+          <option>Section 29E — UNOG</option>
+          <option>Section 34 — DSS</option>
+        </select>
+
+        <select class="f-select" aria-label="Document type">
+          <option>All Types</option>
+          <option>New As Received</option>
+          <option>Amendment</option>
+          <option>Correction</option>
+          <option>Oral Revision</option>
+          <option>Oral Amendment</option>
+          <option>Written Rev.</option>
+          <option>Withdrawn</option>
+        </select>
+
+        <!-- Fluent Pivot — Status filter -->
+        <div class="pivot" role="tablist" aria-label="Status filter">
+          <button class="pivot-item active" role="tab" aria-selected="true" onclick="pivotClick(this)">
+            All <span class="pivot-count">463</span>
+          </button>
+          <button class="pivot-item" role="tab" aria-selected="false" onclick="pivotClick(this)">
+            Draft <span class="pivot-count">57</span>
+          </button>
+          <button class="pivot-item" role="tab" aria-selected="false" onclick="pivotClick(this)">
+            Pending <span class="pivot-count">94</span>
+          </button>
+          <button class="pivot-item" role="tab" aria-selected="false" onclick="pivotClick(this)">
+            In Review <span class="pivot-count">23</span>
+          </button>
+          <button class="pivot-item" role="tab" aria-selected="false" onclick="pivotClick(this)">
+            Approved <span class="pivot-count">289</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Fluent DetailsList ───────────────────────────────── -->
+      <div class="wp-table-wrap">
+        <table class="detail-list" aria-label="Resolutions list" aria-rowcount="463">
+          <thead>
+            <tr>
+              <th style="width:32px"><input type="checkbox" aria-label="Select all" /></th>
+              <th class="sortable sorted" aria-sort="descending" style="width:140px">
+                Draft Res No ↓
+              </th>
+              <th class="sortable" aria-sort="none">Title / Section</th>
+              <th style="width:130px">Body / Session</th>
+              <th style="width:80px">Type</th>
+              <th style="width:110px">Status</th>
+              <th class="sortable" style="width:140px" aria-sort="none">Approval ↕</th>
+              <th class="sortable" style="width:110px" aria-sort="none">PBI Cost ↕</th>
+              <th style="width:72px"></th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- Row 1 — Approved, full approval chain -->
+            <tr aria-selected="false">
+              <td><input type="checkbox" aria-label="Select A/HRC/56/L.1" /></td>
+              <td><a class="res-link" onclick="openPanel()" href="#" aria-label="View A/HRC/56/L.1">A/HRC/56/L.1</a></td>
+              <td>
+                <div class="res-title">Human rights situation in Syria</div>
+                <div class="res-subtitle">Section 24 — OHCHR &middot; S.24_OHCHR</div>
+              </td>
+              <td style="font-size:.8rem;color:var(--gray-500)">HRC 56 &middot; 2024</td>
+              <td style="font-size:.75rem;color:var(--gray-500)">New</td>
+              <td><span class="fl-badge approved"><span class="dot"></span>Approved</span></td>
+              <td>
+                <div class="ap-cell">
+                  <div class="ap-bar"><div class="ap-fill complete" style="width:100%"></div></div>
+                  <span class="ap-text">5 / 5</span>
+                </div>
+              </td>
+              <td style="font-size:.8rem;font-weight:600">$248,500</td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="View detail" onclick="openPanel()" aria-label="View A/HRC/56/L.1">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn" title="Edit resolution" aria-label="Edit A/HRC/56/L.1">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 2 — Pending approval, amendment type -->
+            <tr>
+              <td><input type="checkbox" aria-label="Select A/HRC/56/L.2" /></td>
+              <td><a class="res-link" onclick="openPanel()" href="#" aria-label="View A/HRC/56/L.2">A/HRC/56/L.2</a></td>
+              <td>
+                <div class="res-title">Right to development<span class="type-tag type-amendment">AMEND</span></div>
+                <div class="res-subtitle">Section 2 — DGACM &middot; CONFSERV &middot; to A/HRC/55/L.4</div>
+              </td>
+              <td style="font-size:.8rem;color:var(--gray-500)">HRC 56 &middot; 2024</td>
+              <td style="font-size:.75rem;color:var(--gray-500)">Amendment</td>
+              <td><span class="fl-badge pending"><span class="dot"></span>Pending</span></td>
+              <td>
+                <div class="ap-cell">
+                  <div class="ap-bar"><div class="ap-fill" style="width:60%"></div></div>
+                  <span class="ap-text">3 / 5 &mdash; PPBD FBO</span>
+                </div>
+              </td>
+              <td style="font-size:.8rem;font-weight:600">$115,200</td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="View detail" onclick="openPanel()" aria-label="View A/HRC/56/L.2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn" title="Edit resolution" aria-label="Edit A/HRC/56/L.2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 3 — In Review, SR Mandate -->
+            <tr>
+              <td><input type="checkbox" aria-label="Select A/HRC/56/L.3" /></td>
+              <td><a class="res-link" onclick="openPanel()" href="#" aria-label="View A/HRC/56/L.3">A/HRC/56/L.3</a></td>
+              <td>
+                <div class="res-title">Mandate of the Special Rapporteur on torture</div>
+                <div class="res-subtitle">Section 24 — OHCHR &middot; S.24_OHCHR &middot; <strong style="color:var(--review-fg);font-size:.7rem">SR_MANDATE</strong></div>
+              </td>
+              <td style="font-size:.8rem;color:var(--gray-500)">HRC 56 &middot; 2024</td>
+              <td style="font-size:.75rem;color:var(--gray-500)">New</td>
+              <td><span class="fl-badge review"><span class="dot"></span>In Review</span></td>
+              <td>
+                <div class="ap-cell">
+                  <div class="ap-bar"><div class="ap-fill" style="width:40%"></div></div>
+                  <span class="ap-text">2 / 5 &mdash; Finance</span>
+                </div>
+              </td>
+              <td style="font-size:.8rem;font-weight:600">$392,000</td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="View detail" onclick="openPanel()" aria-label="View A/HRC/56/L.3">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn" title="Edit" aria-label="Edit A/HRC/56/L.3">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 4 — Draft, PBI not started -->
+            <tr>
+              <td><input type="checkbox" aria-label="Select A/HRC/56/L.4" /></td>
+              <td><a class="res-link" href="#" aria-label="View A/HRC/56/L.4">A/HRC/56/L.4</a></td>
+              <td>
+                <div class="res-title">Freedom of religion or belief</div>
+                <div class="res-subtitle">Section 2 — DGACM &middot; CONFSERV</div>
+              </td>
+              <td style="font-size:.8rem;color:var(--gray-500)">HRC 56 &middot; 2024</td>
+              <td style="font-size:.75rem;color:var(--gray-500)">New</td>
+              <td><span class="fl-badge draft"><span class="dot"></span>Draft</span></td>
+              <td>
+                <div class="ap-cell">
+                  <div class="ap-bar"><div class="ap-fill" style="width:20%"></div></div>
+                  <span class="ap-text">1 / 5 &mdash; Requested</span>
+                </div>
+              </td>
+              <td style="font-size:.8rem;color:var(--gray-500)">—</td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="View detail" aria-label="View A/HRC/56/L.4">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn" title="Enter PBI" aria-label="Enter PBI for A/HRC/56/L.4">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 5 — Correction -->
+            <tr>
+              <td><input type="checkbox" aria-label="Select A/HRC/56/L.5/Corr.1" /></td>
+              <td><a class="res-link" onclick="openPanel()" href="#" aria-label="View A/HRC/56/L.5/Corr.1">A/HRC/56/L.5</a></td>
+              <td>
+                <div class="res-title">Right to housing — follow-up<span class="type-tag type-correction">CORR.1</span></div>
+                <div class="res-subtitle">Section 24 — OHCHR &middot; S.24_OHCHR</div>
+              </td>
+              <td style="font-size:.8rem;color:var(--gray-500)">HRC 56 &middot; 2024</td>
+              <td style="font-size:.75rem;color:var(--gray-500)">Correction</td>
+              <td><span class="fl-badge approved"><span class="dot"></span>Approved</span></td>
+              <td>
+                <div class="ap-cell">
+                  <div class="ap-bar"><div class="ap-fill complete" style="width:100%"></div></div>
+                  <span class="ap-text">5 / 5</span>
+                </div>
+              </td>
+              <td style="font-size:.8rem;font-weight:600">$87,300</td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="View detail" onclick="openPanel()" aria-label="View A/HRC/56/L.5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn" title="Generate OS" aria-label="Generate Oral Statement for A/HRC/56/L.5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 6 — Withdrawn -->
+            <tr>
+              <td><input type="checkbox" aria-label="Select A/HRC/56/L.6" /></td>
+              <td><a class="res-link" href="#" style="color:var(--gray-500)">A/HRC/56/L.6</a></td>
+              <td>
+                <div class="res-title" style="color:var(--gray-500)">Climate change and human rights<span class="type-tag type-withdrawal">WITHDRAWN</span></div>
+                <div class="res-subtitle">Section 24 — OHCHR &middot; withdrawn by sponsor(s)</div>
+              </td>
+              <td style="font-size:.8rem;color:var(--gray-500)">HRC 56 &middot; 2024</td>
+              <td style="font-size:.75rem;color:var(--gray-500)">Withdrawn</td>
+              <td><span class="fl-badge withdrawn"><span class="dot"></span>Withdrawn</span></td>
+              <td><span style="font-size:.75rem;color:var(--gray-300)">—</span></td>
+              <td style="font-size:.8rem;color:var(--gray-500)">—</td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="View detail" aria-label="View A/HRC/56/L.6 (withdrawn)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="wp-pager">
+        <div>
+          <select class="f-select" style="font-size:.75rem" aria-label="Rows per page">
+            <option>20 per page</option>
+            <option>50 per page</option>
+            <option>100 per page</option>
+          </select>
+          &nbsp; Showing 1–6 of 463 resolutions
+        </div>
+        <div class="pager-btns" role="navigation" aria-label="Page navigation">
+          <button class="pg-btn" disabled aria-label="Previous page">‹</button>
+          <button class="pg-btn active" aria-current="page">1</button>
+          <button class="pg-btn">2</button>
+          <button class="pg-btn">3</button>
+          <span style="font-size:.8rem;padding:0 4px;color:var(--gray-300)">…</span>
+          <button class="pg-btn">24</button>
+          <button class="pg-btn" aria-label="Next page">›</button>
+        </div>
+        <div>Page 1 of 24</div>
+      </div>
+
+    </div><!-- /.wp-root -->
+  </div><!-- /.spfx-zone -->
+</div><!-- /.sp-canvas -->
+
+
+<!-- ================================================================
+     FLUENT PANEL — Resolution Detail (SPFx Panel component)
+     Opens on row click — full panel width 480px, slides from right
+================================================================ -->
+<div class="panel-overlay" id="pOverlay" onclick="closePanel()" aria-hidden="true"></div>
+
+<div class="fluent-panel" id="fPanel" role="dialog" aria-modal="true" aria-label="Resolution detail — A/HRC/56/L.1">
+  <div class="panel-header">
+    <div class="panel-header-text">
+      <h2>A/HRC/56/L.1</h2>
+      <p>Human rights situation in Syria &nbsp;·&nbsp; Section 24 — OHCHR</p>
+    </div>
+    <button class="panel-close" onclick="closePanel()" aria-label="Close panel">✕</button>
+  </div>
+
+  <!-- Pivot tabs (Details / PBI Costs / Approval / OS / Documents) -->
+  <div class="panel-pivot" role="tablist">
+    <button class="pp-tab active" role="tab" aria-selected="true" onclick="pivotPanel(this)">Details</button>
+    <button class="pp-tab" role="tab" aria-selected="false" onclick="pivotPanel(this)">PBI Costs</button>
+    <button class="pp-tab" role="tab" aria-selected="false" onclick="pivotPanel(this)">Approval</button>
+    <button class="pp-tab" role="tab" aria-selected="false" onclick="pivotPanel(this)">Oral Statement</button>
+    <button class="pp-tab" role="tab" aria-selected="false" onclick="pivotPanel(this)">Documents</button>
+  </div>
+
+  <div class="panel-body" id="panelBody">
+
+    <!-- Tab: Details -->
+    <div id="tabDetails">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span class="fl-badge approved"><span class="dot"></span>Approved</span>
+        <span class="fl-badge" style="background:var(--draft-bg);color:var(--draft-fg)"><span class="dot" style="background:var(--draft-fg)"></span>Section 24</span>
+        <span style="font-size:.72rem;color:var(--gray-500);margin-left:auto">Created 12 Jan 2024</span>
+      </div>
+
+      <div class="pf-section-title">Resolution Metadata</div>
+      <div class="pf-grid">
+        <div><div class="pf-label">Draft Resolution No</div><div class="pf-value">A/HRC/56/L.1</div></div>
+        <div><div class="pf-label">Adopted Resolution No</div><div class="pf-value">A/HRC/56/1</div></div>
+        <div><div class="pf-label">Session</div><div class="pf-value">HRC 56</div></div>
+        <div><div class="pf-label">Session Year</div><div class="pf-value">2024</div></div>
+        <div><div class="pf-label">Intergovernmental Body</div><div class="pf-value">Human Rights Council</div></div>
+        <div><div class="pf-label">Budget Section</div><div class="pf-value">Section 24 (OHCHR)</div></div>
+        <div><div class="pf-label">Budget Section ID</div><div class="pf-value">S.24_OHCHR</div></div>
+        <div><div class="pf-label">Ingestion Type</div><div class="pf-value">New As Received</div></div>
+        <div><div class="pf-label">Document Type</div><div class="pf-value">As Rec.</div></div>
+        <div><div class="pf-label">DCMPBI</div><div class="pf-value">Yes (approved by MMS)</div></div>
+        <div class="pf-grid-full" style="grid-column:1/-1">
+          <div class="pf-label">Resolution Title</div>
+          <div class="pf-value">Human rights situation in the Syrian Arab Republic — follow-up measures for the 56th session</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="pf-section-title">Operative Paragraphs</div>
+        <div style="font-size:.8rem;color:var(--gray-500);margin-bottom:6px">7 OPs extracted and matched to 3 mandates by Azure Function /api/parser</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="background:#F3F2F1;border-radius:3px;padding:7px 10px;font-size:.8rem;line-height:1.4">
+            <strong>OP 1.</strong> <em>Requests</em> the Secretary-General to prepare a comprehensive report on the human rights situation in Syria…
+          </div>
+          <div style="background:#F3F2F1;border-radius:3px;padding:7px 10px;font-size:.8rem;line-height:1.4">
+            <strong>OP 2.</strong> <em>Decides</em> to extend the mandate of the Special Rapporteur on the situation of human rights in Syria for a period of one year…
+          </div>
+          <div style="background:#F3F2F1;border-radius:3px;padding:7px 10px;font-size:.8rem;line-height:1.4;color:var(--gray-500)">
+            + 5 more operative paragraphs…
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: PBI Costs (hidden by default) -->
+    <div id="tabPBI" style="display:none">
+      <div class="pf-section-title">PBI Cost Summary</div>
+      <table class="cost-table">
+        <thead>
+          <tr>
+            <th>Budget Category</th>
+            <th class="num">Estimated</th>
+            <th class="num">Approved</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Posts &amp; Staff Costs</td><td class="num">$91,500</td><td class="num">$91,500</td></tr>
+          <tr><td>Consultant Experts</td><td class="num">$89,200</td><td class="num">$89,200</td></tr>
+          <tr><td>Travel &amp; Contributions</td><td class="num">$67,800</td><td class="num">$67,800</td></tr>
+          <tr><td>Other Services</td><td class="num">$0</td><td class="num">$0</td></tr>
+          <tr><td><strong>Total</strong></td><td class="num"><strong>$248,500</strong></td><td class="num" style="color:var(--approved-fg)"><strong>$248,500</strong></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;font-size:.75rem;color:var(--gray-500)">
+        PBI Approval Stage: <strong style="color:var(--approved-fg)">GA Approved</strong>
+        &nbsp;·&nbsp; Cost Rate File: MRMSRates_2026_STAGE.xlsx (valid 01 Jan–31 Dec 2026)
+      </div>
+    </div>
+
+    <!-- Tab: Approval (hidden) -->
+    <div id="tabApproval" style="display:none">
+      <div class="pf-section-title">PBI Approval Chain — Section 24 (OHCHR)</div>
+      <div class="stage-list">
+        <div class="stage-item"><div class="stage-icon done">✓</div><div><div class="stage-name">OHCHR Substantive Staff</div><div class="stage-meta">Approved 14 Jan 2024 · J. Müller</div></div></div>
+        <div class="stage-item"><div class="stage-icon done">✓</div><div><div class="stage-name">PBI Focal Point</div><div class="stage-meta">Approved 15 Jan 2024 · P. Sharma</div></div></div>
+        <div class="stage-item"><div class="stage-icon done">✓</div><div><div class="stage-name">OHCHR Finance Reviewer</div><div class="stage-meta">Approved 16 Jan 2024 · F. Nakamura</div></div></div>
+        <div class="stage-item"><div class="stage-icon done">✓</div><div><div class="stage-name">PPBD FBO</div><div class="stage-meta">Approved 19 Jan 2024 · D. Chen</div></div></div>
+        <div class="stage-item"><div class="stage-icon done">✓</div><div><div class="stage-name">PPBD OD (Final Approval)</div><div class="stage-meta">Approved 22 Jan 2024 · R. Okonkwo</div></div></div>
+      </div>
+      <div style="margin-top:12px;padding:8px 10px;background:var(--approved-bg);border-radius:3px;font-size:.8rem;color:var(--approved-fg)">
+        <strong>Approval chain read from CostRates workbook</strong> — Approvals sheet, Section 24 chain. Conditions evaluated: SR_MANDATE (yes), STD_DOC (yes).
+      </div>
+    </div>
+
+  </div><!-- /.panel-body -->
+
+  <div class="panel-footer">
+    <button class="f-btn primary">Edit Resolution</button>
+    <button class="f-btn default">Generate OS</button>
+    <button class="f-btn default">Enter PBI</button>
+    <button class="f-btn ghost" onclick="closePanel()">Close</button>
+  </div>
+</div>
+
+<!-- Design annotation -->
+<div class="anno" role="note">
+  <strong>UI Mockup v2.0 — SP Context</strong><br/>
+  <span class="sp-owns">■ Yellow</span> = SharePoint-owned chrome<br/>
+  <span class="wp-owns">■ Cyan</span> = SPFx webpart owns<br/>
+  Fluent UI v8 · Communication Site<br/>
+  Full-width webpart zone · WCAG 2.1 AA<br/>
+  5 May 2026
+</div>
+
+<script>
+  function openPanel() {
+    document.getElementById('pOverlay').classList.add('open');
+    document.getElementById('fPanel').classList.add('open');
+    document.getElementById('fPanel').setAttribute('aria-hidden','false');
+  }
+  function closePanel() {
+    document.getElementById('pOverlay').classList.remove('open');
+    document.getElementById('fPanel').classList.remove('open');
+    document.getElementById('fPanel').setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+  function pivotPanel(el) {
+    document.querySelectorAll('.pp-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+    el.classList.add('active'); el.setAttribute('aria-selected','true');
+    // Show/hide tab bodies
+    const map = { 'Details':'tabDetails', 'PBI Costs':'tabPBI', 'Approval':'tabApproval' };
+    const key = el.textContent.trim();
+    Object.values(map).forEach(id => {
+      const el2 = document.getElementById(id);
+      if (el2) el2.style.display = 'none';
+    });
+    const target = map[key];
+    if (target) document.getElementById(target).style.display = '';
+  }
+
+  function pivotClick(el) {
+    document.querySelectorAll('.pivot-item').forEach(p => { p.classList.remove('active'); p.setAttribute('aria-selected','false'); });
+    el.classList.add('active'); el.setAttribute('aria-selected','true');
+  }
+</script>
+</body>
+</html>

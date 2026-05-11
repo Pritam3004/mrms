@@ -1,0 +1,290 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedsharepointonline_e8f69"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "838001b3-e891-45f6-95e9-1dd9247933fd"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "title": "JsonInput",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter your input",
+                  "x-ms-content-hint": "TEXT"
+                },
+                "text_1": {
+                  "title": "SiteUrl",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter your input",
+                  "x-ms-content-hint": "TEXT"
+                }
+              },
+              "required": [
+                "text",
+                "text_1"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Parse_JSON": {
+          "runAfter": {
+            "Compose_2": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "74215a3f-4cfe-4178-9ed4-b67c2b734f75"
+          },
+          "type": "ParseJson",
+          "inputs": {
+            "content": "@triggerBody()['text']",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "Branch": {
+                    "type": "object",
+                    "properties": {
+                      "Value": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "Division": {
+                    "type": "object",
+                    "properties": {
+                      "Value": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "Entity": {
+                    "type": "object",
+                    "properties": {
+                      "Value": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "Groups": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "Id": {
+                          "type": "integer"
+                        },
+                        "Value": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "Id",
+                        "Value"
+                      ]
+                    }
+                  },
+                  "LastName": {
+                    "type": "string"
+                  },
+                  "Location": {
+                    "type": "object",
+                    "properties": {
+                      "Value": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "Section": {
+                    "type": "object",
+                    "properties": {
+                      "Value": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "Title": {
+                    "type": "string"
+                  },
+                  "UNEmail": {
+                    "type": "string"
+                  },
+                  "Unit": {
+                    "type": "object",
+                    "properties": {
+                      "Value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "Title",
+                  "LastName",
+                  "UNEmail"
+                ]
+              }
+            }
+          }
+        },
+        "Create_CSV_table": {
+          "runAfter": {
+            "Select": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "30376209-829b-436e-a82d-fa4aa1393b58"
+          },
+          "type": "Table",
+          "inputs": {
+            "from": "@body('Select')",
+            "format": "CSV"
+          }
+        },
+        "Create_file": {
+          "runAfter": {
+            "Create_CSV_table": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "67d0493a-0302-4507-8130-ca7f47461d7a"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "connectionName": "shared_sharepointonline",
+              "operationId": "CreateFile"
+            },
+            "parameters": {
+              "dataset": "@triggerBody()['text_1']",
+              "folderPath": "/Export Data",
+              "name": "export_@{formatDateTime(utcNow(), 'yyyyMMddhhmmss')}.csv",
+              "body": "@concat(uriComponentToString('%EF%BB%BF'),body('Create_CSV_table'))"
+            },
+            "authentication": {
+              "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']",
+              "type": "Raw"
+            }
+          },
+          "runtimeConfiguration": {
+            "contentTransfer": {
+              "transferMode": "Chunked"
+            }
+          }
+        },
+        "Compose": {
+          "runAfter": {
+            "Create_file": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "120dc325-a383-41f5-82c5-0063583e0dba"
+          },
+          "type": "Compose",
+          "inputs": "@{triggerBody()['text_1']}@{outputs('Create_file')?['body/Path']}"
+        },
+        "Respond_to_a_PowerApp_or_flow": {
+          "runAfter": {
+            "Compose": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "af0872a6-3c63-41ea-84de-180b5d46d1ee"
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "statusCode": 200,
+            "body": {
+              "linkoutput": "@{outputs('Compose')}"
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "linkoutput": {
+                  "title": "LinkOutput",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "Select": {
+          "runAfter": {
+            "Parse_JSON": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "b7ac8f7f-87e0-4c0d-a234-9bd10258b190"
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Parse_JSON')",
+            "select": {
+              "FirstName": "@item()['Title']",
+              "LastName": "@item()['LastName']",
+              "UNEmail": "@item()['UNEmail']",
+              "Entity": "@item()?['Entity/Value']",
+              "Division": "@item()?['Division/Value']",
+              "Branch": "@item()?['Branch/Value']",
+              "Section": "@item()?['Section/Value']",
+              "Groups": "@join(xpath(xml(json(concat('{ \"root\": {\"Labels\":', string(item()?['Groups']), '}}'))), '//Value/text()'), ',')",
+              "Unit": "@item()?['Unit/Value']"
+            }
+          }
+        },
+        "Compose_2": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "1ce1e0e0-637b-43af-8393-3d1548f41066"
+          },
+          "type": "Compose",
+          "inputs": "@triggerBody()['text_1']"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

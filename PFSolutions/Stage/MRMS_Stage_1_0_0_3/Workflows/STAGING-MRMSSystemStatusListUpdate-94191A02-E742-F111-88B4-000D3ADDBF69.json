@@ -1,0 +1,100 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline_1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "stg_sharedsharepointonline_63e53"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "d92cf95b-fc27-43e4-8602-4bedc2b4da49"
+          },
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "Requestbody": {
+                  "type": "string"
+                }
+              }
+            },
+            "method": "POST",
+            "triggerAuthenticationType": "All"
+          }
+        }
+      },
+      "actions": {
+        "Status_list_system_update_request_": {
+          "runAfter": {
+            "Set_Body": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "70289c60-45d7-402f-94ca-6ccd0045c9b3"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "connectionName": "shared_sharepointonline_1",
+              "operationId": "HttpRequest"
+            },
+            "parameters": {
+              "dataset": "https://unitednations.sharepoint.com/sites/APP-STAGING-MRMS-MGT_DEV",
+              "parameters/method": "POST",
+              "parameters/uri": "_vti_bin/client.svc/ProcessQuery",
+              "parameters/headers": {
+                "Content-Type": "text/xml;charset=\"UTF-8\"",
+                "X-Requested-With": "XMLHttpRequest",
+                "Accept": "*/*"
+              },
+              "parameters/body": "@variables('Body')"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Set_Body": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "76144d02-564b-4ad6-8ae4-3157bf3211db"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Body",
+                "type": "string",
+                "value": "@triggerBody()?['Requestbody']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

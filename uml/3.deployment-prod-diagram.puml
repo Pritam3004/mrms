@@ -1,0 +1,83 @@
+@startuml DeploymentProd
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+LAYOUT_TOP_DOWN()
+
+AddElementTag("black", $bgColor="#000000", $fontColor="#ffffff", $borderColor="#ffffff")
+AddElementTag("external", $bgColor="#999999", $fontColor="#ffffff", $borderColor="#ffffff")
+AddBoundaryTag("appzone", $borderColor="#1168bd", $borderStyle=DashedLine(), $bgColor="transparent", $legendText="Application Zone")
+AddBoundaryTag("backendzone", $borderColor="#666666", $borderStyle=DashedLine(), $bgColor="transparent", $legendText="Backend Zone")
+
+title MRMS - C4 Level 3: Deployment (Production)
+
+'---- Client ----
+Deployment_Node(clientBrowser, "Client", "Web Browser") {
+    Person(users, "Users (Browser)", "Staff who enter, review,\nand approve resolutions.")
+    Person(roles, "Administrator (Browser)", "Manages SharePoint\ngroup-based permission roles.")
+}
+
+Person(userEmail, "Users (Email)", "Sends Email with documents to MRMS.")
+
+'---- UN Microsoft 365 Tenant ----
+Deployment_Node(m365Tenant, "UN Microsoft Tenant", "UN OICT - unitednations.sharepoint.com") {
+
+    Deployment_Node(entraNode, "UN Entra ID", "OAuth 2.0", $tags="black") {
+        Container(entraID, "Identity Provider", "Entra ID", "SSO authentication\nfor MRMS users.", $tags="black")
+    }
+
+    Container(mailboxProd, "mrms@un.org", "Shared Mailbox", "Ingestion mailbox for\nincoming resolutions via email (with safe list).", $tags="external")
+
+    Deployment_Node(pbiNode, "Power BI Service", "Microsoft 365") {
+        Container(powerBIProd, "Power BI Reports", "Power BI", "Reporting and analytics\nover mandate data.", $tags="external")
+    }
+
+    '---- Application Zone (logical) ----
+    Boundary(appZone, "Application Zone", $tags="appzone") {
+
+        Deployment_Node(spoNode, "SharePoint Online", "Microsoft 365 SaaS - Site Collection") {
+            Container(sharePointOnlineProd, "SharePoint Online (SPFx)", "SharePoint SPFx", "Web parts: data entry, resolution\nmanagement, dashboards, OS generation.")
+        }
+
+        Deployment_Node(paNode, "Power Platform", "Microsoft 365 - Environment") {
+            Container(powerAutomateProd, "Power Automate", "Flows - Production", "Email ingestion, approvals,\nnotifications, OP extraction,\nand bulk operations.")
+        }
+
+        Deployment_Node(azureTenant, "Microsoft Azure", "UN Azure Subscription - Consumption Plan") {
+            Container(azFuncProd, "Azure Function API", "Python 3.11", "OS generation, OP extraction,\nRevised Estimate report generation.")
+        }
+    }
+
+    '---- Backend Zone (logical) ----
+    Boundary(backendZone, "Backend Zone", $tags="backendzone") {
+        Deployment_Node(spoBackendNode, "SharePoint Online", "Microsoft 365 SaaS - Data Layer") {
+            ContainerDb(listsLibrariesProd, "Lists & Libraries", "SharePoint Lists", "Resolutions, Mandates, OPs,\nPBI lists, CostRates, SafeList, Error Logs.")
+        }
+    }
+}
+
+'---- External ----
+Deployment_Node(docUNNode, "documents.un.org", "External - UN Document Repository", $tags="external") {
+    Container(docUN, "UN Official Documents System", "HTTPS / POST", "Source for adopted resolution documents.", $tags="external")
+}
+
+'---- Relationships ----
+Rel_D(users, entraID, "Authenticates", "OAuth 2.0")
+Rel_D(roles, entraID, "Authenticates", "OAuth 2.0")
+Rel_D(users, sharePointOnlineProd, "Interacts", "HTTPS")
+Rel_D(roles, sharePointOnlineProd, "Configures permissions", "HTTPS")
+
+BiRel(sharePointOnlineProd, listsLibrariesProd, "SharePoint REST API", "HTTPS / POST")
+
+Rel_D(powerAutomateProd, mailboxProd, "Monitors mailbox for SafeList-filtered emails", "PULL / Flow trigger")
+Rel_U(userEmail, mailboxProd, "Sends email with Formatted Subject and attachments", "Flow trigger")
+Rel_L(powerAutomateProd, azFuncProd, "Calls", "HTTPS / POST")
+Rel_R(sharePointOnlineProd, azFuncProd, "Calls", "HTTPS / POST")
+Rel_R(powerAutomateProd, listsLibrariesProd, "SharePoint REST API", "HTTPS / POST")
+
+Rel_D(azFuncProd, listsLibrariesProd, "SharePoint REST API/ Auth - ClientID and ClientSecret", "HTTPS / POST")
+Rel_D(azFuncProd, docUN, "Reads", "HTTPS / PULL")
+
+Rel_U(powerBIProd, listsLibrariesProd, "Reads data", "HTTPS / PULL")
+
+SHOW_LEGEND()
+@enduml
