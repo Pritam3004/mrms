@@ -1,0 +1,52 @@
+<!-- DESIGN D: UN Globe rings — icon-forward, stacked layout, dark navy -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160" width="480" height="160" role="img" aria-label="MRMS – Mandate Review and Management System">
+  <defs>
+    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#002D62"/>
+      <stop offset="100%" style="stop-color:#00539C"/>
+    </linearGradient>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00AEEF"/>
+      <stop offset="100%" style="stop-color:#7DD3F8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ── Concentric ring emblem ── -->
+  <!-- Outermost ring -->
+  <circle cx="76" cy="80" r="60" fill="none" stroke="#00AEEF" stroke-width="2.5" opacity="0.18"/>
+  <circle cx="76" cy="80" r="52" fill="none" stroke="#00AEEF" stroke-width="2" opacity="0.25"/>
+  <circle cx="76" cy="80" r="44" fill="none" stroke="#00AEEF" stroke-width="2" opacity="0.35"/>
+
+  <!-- Filled inner disc -->
+  <circle cx="76" cy="80" r="36" fill="url(#navyGrad)"/>
+
+  <!-- Stylised globe meridian cross inside disc -->
+  <line x1="76" y1="44" x2="76" y2="116" stroke="white" stroke-width="1.5" opacity="0.5"/>
+  <line x1="40" y1="80" x2="112" y2="80" stroke="white" stroke-width="1.5" opacity="0.5"/>
+  <!-- Latitude ovals -->
+  <ellipse cx="76" cy="80" rx="36" ry="12" fill="none" stroke="white" stroke-width="1.2" opacity="0.4"/>
+  <ellipse cx="76" cy="80" rx="36" ry="24" fill="none" stroke="white" stroke-width="1" opacity="0.25"/>
+
+  <!-- MRMS letters under emblem, vertical divider, tagline -->
+  <!-- Divider -->
+  <line x1="154" y1="28" x2="154" y2="132" stroke="url(#ringGrad)" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Acronym -->
+  <text x="172" y="100"
+        font-family="'Segoe UI', Arial, sans-serif"
+        font-size="60" font-weight="800" letter-spacing="0"
+        fill="url(#navyGrad)">MRMS</text>
+
+  <!-- Thin accent under acronym -->
+  <rect x="172" y="105" width="280" height="2.5" rx="1.2" fill="#00AEEF" opacity="0.5"/>
+
+  <!-- Full name split two lines -->
+  <text x="174" y="122"
+        font-family="'Segoe UI', Arial, sans-serif"
+        font-size="11" font-weight="400" letter-spacing="3"
+        fill="#002D62" opacity="0.9">MANDATE REVIEW &amp;</text>
+  <text x="174" y="138"
+        font-family="'Segoe UI', Arial, sans-serif"
+        font-size="11" font-weight="400" letter-spacing="3"
+        fill="#002D62" opacity="0.9">MANAGEMENT SYSTEM</text>
+</svg>

@@ -1,0 +1,50 @@
+<!-- DESIGN B: Minimalist Shield / UN Blue with mandate pillars -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 160" width="460" height="160" role="img" aria-label="MRMS – Mandate Review and Management System">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0099D6"/>
+      <stop offset="100%" style="stop-color:#004F8B"/>
+    </linearGradient>
+    <linearGradient id="accentB" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#F4A300"/>
+      <stop offset="100%" style="stop-color:#E07B00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shield shape -->
+  <path d="M24 28 L116 28 L116 100 Q116 130 70 142 Q24 130 24 100 Z"
+        fill="url(#shieldGrad)"/>
+
+  <!-- Shield inner border -->
+  <path d="M31 34 L109 34 L109 99 Q109 124 70 135 Q31 124 31 99 Z"
+        fill="none" stroke="white" stroke-width="1.2" opacity="0.3"/>
+
+  <!-- Three vertical pillars inside shield (represent mandates/resolutions) -->
+  <rect x="46" y="54" width="10" height="52" rx="2" fill="white" opacity="0.95"/>
+  <rect x="65" y="44" width="10" height="62" rx="2" fill="white" opacity="0.95"/>
+  <rect x="84" y="54" width="10" height="52" rx="2" fill="white" opacity="0.95"/>
+
+  <!-- Gold accent bar at top of each pillar -->
+  <rect x="46" y="54" width="10" height="6" rx="2" fill="url(#accentB)"/>
+  <rect x="65" y="44" width="10" height="6" rx="2" fill="url(#accentB)"/>
+  <rect x="84" y="54" width="10" height="6" rx="2" fill="url(#accentB)"/>
+
+  <!-- ── Wordmark ── -->
+  <text x="142" y="90"
+        font-family="'Segoe UI', Arial, sans-serif"
+        font-size="56" font-weight="800" letter-spacing="2"
+        fill="#004F8B">MRMS</text>
+
+  <!-- Gold underline accent -->
+  <rect x="142" y="98" width="290" height="3" rx="1.5" fill="url(#accentB)"/>
+
+  <!-- Full name -->
+  <text x="144" y="118"
+        font-family="'Segoe UI', Arial, sans-serif"
+        font-size="11" font-weight="400" letter-spacing="3"
+        fill="#004F8B" opacity="0.8">MANDATE REVIEW &amp;</text>
+  <text x="144" y="133"
+        font-family="'Segoe UI', Arial, sans-serif"
+        font-size="11" font-weight="400" letter-spacing="3"
+        fill="#004F8B" opacity="0.8">MANAGEMENT SYSTEM</text>
+</svg>

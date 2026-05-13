@@ -1,0 +1,40 @@
+<!-- DESIGN C: Modern flat — circular UN-blue emblem + clean sans wordmark -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160" width="480" height="160" role="img" aria-label="MRMS – Mandate Review and Management System">
+  <defs>
+    <linearGradient id="circleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00AEEF"/>
+      <stop offset="100%" style="stop-color:#005A96"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Circle emblem -->
+  <circle cx="72" cy="80" r="58" fill="url(#circleGrad)"/>
+
+  <!-- "M" initial in white, bold -->
+  <text x="72" y="90"
+        font-family="'Segoe UI', Arial, sans-serif"
+        font-size="52" font-weight="900"
+        fill="white" text-anchor="middle"
+        letter-spacing="-2">M</text>
+
+  <!-- Thin arc segments around circle (mandate cycle) -->
+  <!-- Top arc -->
+  <path d="M 30 40 A 50 50 0 0 1 114 40" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+  <!-- Bottom arc -->
+  <path d="M 30 120 A 50 50 0 0 0 114 120" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+
+  <!-- Vertical separator -->
+  <line x1="148" y1="32" x2="148" y2="128" stroke="#00AEEF" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+
+  <!-- MRMS large -->
+  <text x="166" y="100"
+        font-family="'Segoe UI', Arial, sans-serif"
+        font-size="58" font-weight="700" letter-spacing="4"
+        fill="#003D6B">MRMS</text>
+
+  <!-- Tagline below -->
+  <text x="169" y="118"
+        font-family="'Segoe UI', Arial, sans-serif"
+        font-size="10.5" font-weight="300" letter-spacing="3.5"
+        fill="#005A96" opacity="0.85">MANDATE REVIEW &amp; MANAGEMENT SYSTEM</text>
+</svg>

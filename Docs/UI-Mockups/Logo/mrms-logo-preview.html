@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MRMS Logo Designs</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #EEF3F8;
+      padding: 48px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 48px;
+    }
+    header { text-align: center; }
+    header h1 { font-size: 13px; letter-spacing: 4px; text-transform: uppercase; color: #004F8B; font-weight: 600; }
+    header p  { font-size: 11px; letter-spacing: 1px; color: #666; margin-top: 6px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 36px;
+      width: 100%;
+      max-width: 1120px;
+    }
+    .card { border-radius: 16px; overflow: hidden; box-shadow: 0 6px 28px rgba(0,60,120,0.10); }
+    .card-header {
+      background: #003A6B; color: white;
+      padding: 10px 20px; font-size: 10px; letter-spacing: 3px;
+      text-transform: uppercase; display: flex; justify-content: space-between; align-items: center;
+    }
+    .card-header span.tag {
+      background: #00AEEF; color: white;
+      padding: 2px 9px; border-radius: 10px; font-size: 9px; letter-spacing: 1px;
+    }
+    .card-body { padding: 28px 32px; display: flex; flex-direction: column; gap: 18px; }
+    .card-body.light  { background: #FFFFFF; }
+    .card-body.grey   { background: #F0F4F8; }
+    .card-body.dark   { background: #001F3F; }
+    .row-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #aaa; margin-bottom: -10px; }
+    .dark .row-label  { color: rgba(255,255,255,0.3); }
+    img { width: 100%; max-width: 460px; display: block; }
+    .caption {
+      font-size: 10.5px; color: #555; line-height: 1.65;
+      padding-top: 10px; border-top: 1px solid #E2E8F0;
+    }
+    .dark .caption { color: rgba(255,255,255,0.4); border-top-color: rgba(255,255,255,0.08); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>MRMS — Logo Design Options</h1>
+    <p>Mandate Review and Management System &nbsp;·&nbsp; All designs are scalable SVG</p>
+  </header>
+
+  <div class="grid">
+
+    <!-- Design A -->
+    <div class="card">
+      <div class="card-header">Design A — Globe + Document <span class="tag">Original</span></div>
+      <div class="card-body light">
+        <p class="row-label">On White</p>
+        <img src="mrms-logo.svg" alt="Design A Light">
+      </div>
+      <div class="card-body dark">
+        <p class="row-label">On Dark</p>
+        <img src="mrms-logo-dark.svg" alt="Design A Dark">
+      </div>
+      <div class="card-body light">
+        <p class="caption">UN-globe with overlaid resolution document + approval tick. Olive branches reinforce UN identity. Classic, institutional feel.</p>
+      </div>
+    </div>
+
+    <!-- Design B -->
+    <div class="card">
+      <div class="card-header">Design B — Shield + Mandate Pillars <span class="tag">Authoritative</span></div>
+      <div class="card-body light">
+        <p class="row-label">On White</p>
+        <img src="mrms-logo-B.svg" alt="Design B Light">
+      </div>
+      <div class="card-body grey">
+        <p class="row-label">On Grey</p>
+        <img src="mrms-logo-B.svg" alt="Design B Grey">
+      </div>
+      <div class="card-body light">
+        <p class="caption">Shield conveys authority and governance. Three pillars represent mandate lifecycle stages. Gold accent adds institutional gravitas.</p>
+      </div>
+    </div>
+
+    <!-- Design C -->
+    <div class="card">
+      <div class="card-header">Design C — Circle Monogram + Clean Type <span class="tag">Modern</span></div>
+      <div class="card-body light">
+        <p class="row-label">On White</p>
+        <img src="mrms-logo-C.svg" alt="Design C Light">
+      </div>
+      <div class="card-body grey">
+        <p class="row-label">On Grey</p>
+        <img src="mrms-logo-C.svg" alt="Design C Grey">
+      </div>
+      <div class="card-body light">
+        <p class="caption">Bold M monogram in a clean circle. Minimal and versatile — doubles as an app icon or favicon. Wide tagline on a single line.</p>
+      </div>
+    </div>
+
+    <!-- Design D -->
+    <div class="card">
+      <div class="card-header">Design D — Concentric Globe Rings <span class="tag">UN-aligned</span></div>
+      <div class="card-body light">
+        <p class="row-label">On White</p>
+        <img src="mrms-logo-D.svg" alt="Design D Light">
+      </div>
+      <div class="card-body grey">
+        <p class="row-label">On Grey</p>
+        <img src="mrms-logo-D.svg" alt="Design D Grey">
+      </div>
+      <div class="card-body light">
+        <p class="caption">Concentric rings echo the UN globe projection. Subtle meridian lines reinforce the global / intergovernmental mandate scope.</p>
+      </div>
+    </div>
+
+    <!-- Design E -->
+    <div class="card">
+      <div class="card-header">Design E — Scroll + Approval Tick <span class="tag">Functional</span></div>
+      <div class="card-body light">
+        <p class="row-label">On White</p>
+        <img src="mrms-logo-E.svg" alt="Design E Light">
+      </div>
+      <div class="card-body grey">
+        <p class="row-label">On Grey</p>
+        <img src="mrms-logo-E.svg" alt="Design E Grey">
+      </div>
+      <div class="card-body light">
+        <p class="caption">Scroll / mandate document with review tick. Directly represents the review &amp; management workflow. Highly recognisable at small sizes.</p>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
