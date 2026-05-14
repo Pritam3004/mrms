@@ -2,6 +2,13 @@
   "servers": {
     "atlassian": {
       "url": "https://mcp.atlassian.com/v1/sse"
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+        "MEMORY_FILE_PATH": "${workspaceFolder}/memory/mrms-memory.json"
+      }
     }
   }
 }

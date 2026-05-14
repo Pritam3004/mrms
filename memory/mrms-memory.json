@@ -1,0 +1,237 @@
+{
+  "entities": [
+    {
+      "name": "sprint-may-1-14",
+      "entityType": "sprint",
+      "observations": [
+        "Sprint: May 1–14 2026",
+        "Goal: Clear High-priority UAT backlog with Alex, fix MISC save blocker, stabilize backlog",
+        "Constraint: No QA until ~June 1 — Elham on leave — dev work parks at In Testing",
+        "Active items: MRMS-2337, MRMS-2522, MRMS-2582, MRMS-2565, MRMS-2538",
+        "UAT confirmed deployed to master: MRMS-2174, MRMS-2233, MRMS-2215, MRMS-2234, MRMS-2173, MRMS-1694, MRMS-2154, MRMS-2155",
+        "NOT confirmed in master (need bb_audit on repos 2+3): MRMS-1734, MRMS-1774, MRMS-2144, MRMS-2145, MRMS-2161, MRMS-2178, MRMS-2377, MRMS-2382, MRMS-2383"
+      ]
+    },
+    {
+      "name": "MRMS-2582",
+      "entityType": "jira-item",
+      "observations": [
+        "Summary: MISC form keeps loading indefinitely",
+        "Priority: High — active blocker",
+        "Assigned: Jaikishan TINDWANI",
+        "Status: To Do (as of sprint start May 1 2026)",
+        "Component: MiscellaneousWebPart",
+        "Area: SPFx section2 repo"
+      ]
+    },
+    {
+      "name": "MRMS-2337",
+      "entityType": "jira-item",
+      "observations": [
+        "Summary: Change authentication for MRMS",
+        "Priority: High",
+        "Assigned: Pritam Pawar",
+        "Status: In Testing → moving to UAT",
+        "Area: AuthService — certificate-based MSAL migration"
+      ]
+    },
+    {
+      "name": "MRMS-2522",
+      "entityType": "jira-item",
+      "observations": [
+        "Summary: Cybersecurity assessment fixes",
+        "Priority: High",
+        "Assigned: Pritam Pawar",
+        "Status: To Do"
+      ]
+    },
+    {
+      "name": "MRMS-2565",
+      "entityType": "jira-item",
+      "observations": [
+        "Summary: OS entries connect to resolution",
+        "Assigned: Jaikishan TINDWANI",
+        "Status: In Progress"
+      ]
+    },
+    {
+      "name": "MRMS-2538",
+      "entityType": "jira-item",
+      "observations": [
+        "Summary: Flows and PowerApps to PowerPlatform Managed Solutions",
+        "Assigned: Siddhesh SAWANT",
+        "Status: To Do",
+        "Corresponds to KI-007 in system knowledge base"
+      ]
+    },
+    {
+      "name": "MRMS-2582-blocker",
+      "entityType": "blocker",
+      "observations": [
+        "MISC form loading indefinitely — MiscellaneousWebPart — assigned Jaikishan — May 2026 — High priority",
+        "Suspected cause: timeout or infinite loop in form load logic in section2 repo"
+      ]
+    },
+    {
+      "name": "uat-queue",
+      "entityType": "uat",
+      "observations": [
+        "Items confirmed deployed to master and ready to send to Alex for UAT review (as of May 1 2026): MRMS-2174, MRMS-2233, MRMS-2215, MRMS-2234, MRMS-2173, MRMS-1694, MRMS-2154, MRMS-2155",
+        "Items NOT yet confirmed in master — pending bb_audit on repos 2 and 3: MRMS-1734, MRMS-1774, MRMS-2144, MRMS-2145, MRMS-2161, MRMS-2178, MRMS-2377, MRMS-2382, MRMS-2383",
+        "Alex UAT SLA: 5 business days. After 2nd chase with no response → close as Accepted",
+        "Elham ALQURNEH on leave until ~June 1 2026 — no QA testing until then"
+      ]
+    },
+    {
+      "name": "alex-uat-notes",
+      "entityType": "uat",
+      "observations": [
+        "Alex is the client UAT reviewer — stakeholder sign-off required on all UAT items",
+        "No UAT responses recorded yet in memory — update this as Alex responds"
+      ]
+    },
+    {
+      "name": "qa-status",
+      "entityType": "qa-status",
+      "observations": [
+        "Elham ALQURNEH is QA Tester — on leave May 2026 returns ~June 1 2026",
+        "25+ unexecuted Zephyr test cases awaiting Elham: MRMS-2488 through MRMS-2534",
+        "All dev work parks at In Testing until Elham returns",
+        "June sprint plan: QA-review all In Testing items, push cleared ones to UAT"
+      ]
+    },
+    {
+      "name": "backlog-rules",
+      "entityType": "process-decision",
+      "observations": [
+        "MRMS-1387: keep as Task in Backlog — admin time tracker — label: admin — do not move or close",
+        "Redundant items to close as Won't Fix: MRMS-1356, MRMS-1854, MRMS-1345, MRMS-1225",
+        "On Hold items — label on-hold and remove from sprint: MRMS-1735, MRMS-1320",
+        "Do NOT touch To-Do/Backlog items — future sprints only"
+      ]
+    },
+    {
+      "name": "jira-admin-notes",
+      "entityType": "process-decision",
+      "observations": [
+        "Old inactive Jira account: 'Pritam PAWAR' (old) — reassign any issues to active account 'Pritam Pawar'",
+        "Rahul WAYKOS no longer on the team — reassign any open items",
+        "Jira instance: unicc.atlassian.net — Project: MRMS — Cloud ID: 1fc47b8b-17dc-433f-bf25-e0da74b5cd8c",
+        "MCP SSE endpoint deprecates 30 June 2026 — migrate .vscode/mcp.json to https://mcp.atlassian.com/v1/mcp before then"
+      ]
+    },
+    {
+      "name": "bitbucket-audit",
+      "entityType": "process-decision",
+      "observations": [
+        "Audit script: bb_audit.ps1 — run from workspace root — cross-references UAT Jira items against master branch commits",
+        "Repo section2 token: BITBUCKET_TOKEN_Section2 in .jira.env",
+        "Repos 2 and 3 tokens: TBD — add to .jira.env when available",
+        "9 UAT items cannot be confirmed until repos 2+3 tokens are added"
+      ]
+    },
+    {
+      "name": "tech-debt-security",
+      "entityType": "risk",
+      "observations": [
+        "P1 SECURITY: settings.json and Appreg.txt in ospython repo contain plaintext DEV credentials — must be removed urgently",
+        "KI-004: No file type/size validation in Power Automate upload flow — High priority — not yet started",
+        "KI-007: Power Automate flows and PowerApps not in managed solution — Medium — MRMS-2538 assigned Siddhesh",
+        "KI-008: Azure Function error handling lacks criticality classification — Medium — not yet started"
+      ]
+    },
+    {
+      "name": "arch-auth",
+      "entityType": "adr",
+      "observations": [
+        "ADR: All Azure Functions use Entra ID App Registration certificate-based MSAL — NO client secrets in any environment",
+        "Status: COMPLETED (KI-002 resolved)",
+        "Certificate moved from ospython/Certificates/ to Azure Key Vault (KI-005 COMPLETED)",
+        "App Reg DEV ClientID: 6746d574-090f-4a0b-9123-3410754d6333",
+        "App Reg PROD ClientID: cb179fd2-7cdc-463c-a5cb-7b34f1ddca94",
+        "Tenant ID: 0f9e35db-544f-4f60-bdcc-5ea416e6dc70"
+      ]
+    },
+    {
+      "name": "arch-costrates",
+      "entityType": "adr",
+      "observations": [
+        "CostRates Excel workbook (56 sheets) is the system source of truth for ALL configuration — cost rates, approval chains, form config, dropdown values, OP parsing keywords",
+        "File: MRMSRates_YYYY.xlsx in CostRates SharePoint document library",
+        "Selection: TypeofFile=CostRates AND EffectiveFromDate <= today <= ValidTillDate",
+        "Only MRMS Owners group may upload new versions",
+        "Annual update required: Salary scales, Travel rates, DSA rates, Exchange rates, OS values, RE values"
+      ]
+    },
+    {
+      "name": "arch-appinsights",
+      "entityType": "adr",
+      "observations": [
+        "Azure Application Insights connected to Azure Function App — COMPLETED (KI-006)",
+        "Sampling enabled in host.json — excludes Request type"
+      ]
+    },
+    {
+      "name": "screen-inventory",
+      "entityType": "screen",
+      "observations": [
+        "COMPLETE: 01-resolution-dashboard-sp-context.html — Section2WebPart in SP chrome",
+        "COMPLETE: 02-webpart-component-reference.html — full component catalogue",
+        "DEPRECATED: 01-resolution-dashboard_singlepage.html — pre-SPFx-constraint, do not use as reference",
+        "NOT STARTED: 03-pbi-cost-entry-form.html — PBI Cost Entry (4 tabs, section-aware, auto-calc)",
+        "NOT STARTED: 04-add-edit-resolution.html — full Add/Edit Resolution form",
+        "NOT STARTED: 05-my-dashboard.html — personal pending items dashboard",
+        "NOT STARTED: 06-revest-report.html — Revised Estimate Report UI",
+        "NOT STARTED: 07-oral-statement-panel.html — OS generator panel with progress",
+        "NOT STARTED: 08-admin.html — user management and CostRates upload"
+      ]
+    },
+    {
+      "name": "repo-section2",
+      "entityType": "repo",
+      "observations": [
+        "SPFx solution MRMS-Forms — local: C:\\Repos\\MRMS\\section2",
+        "Solution ID: 0e86565d-5e33-48ea-b20d-9cd72268f9b6 — Version 2.0.0.0",
+        "Web parts: Section2, Section24, AddResolution, Miscellaneous, BulkUploads",
+        "FluentUI v8 — PnP JS ^3.20.1 — Node 18.18.2",
+        "Bitbucket pipeline: STAGE only configured — UAT/PROD not yet set up"
+      ]
+    },
+    {
+      "name": "repo-mandatedashboard",
+      "entityType": "repo",
+      "observations": [
+        "SPFx solution MRMS-Dashboards — local: C:\\Repos\\MRMS\\mandatedashboard",
+        "Solution ID: e76bad73-ca42-4e4e-8b1a-2bd5e3a2ab71 — Version 2.0.0.0",
+        "Web parts: mdashboard, userDashboard, revEstReport",
+        "Extension: PermissionCheckApplicationCustomizer (runs on all pages)",
+        "FluentUI v8 + v9 — PnP JS ^3.20.1 — axios"
+      ]
+    },
+    {
+      "name": "repo-ospython",
+      "entityType": "repo",
+      "observations": [
+        "Azure Functions Python 3.11 v2 model — local: C:\\Repos\\MRMS\\ospython",
+        "Functions: generate_os_files, parser (blueprint), generate_revest (blueprint)",
+        "Shared auth: sp_auth.py — get_sp_context() — always use this, never inline MSAL",
+        "SECURITY ISSUE: settings.json and Appreg.txt contain plaintext DEV credentials — remove urgently",
+        "Deployment: manual via VS Code Azure Functions extension (no pipeline configured)"
+      ]
+    }
+  ],
+  "relations": [
+    { "from": "MRMS-2582-blocker", "to": "sprint-may-1-14", "relationType": "blocksSprint" },
+    { "from": "MRMS-2582",         "to": "MRMS-2582-blocker", "relationType": "hasBlocker" },
+    { "from": "MRMS-2582",         "to": "sprint-may-1-14",   "relationType": "inSprint" },
+    { "from": "MRMS-2337",         "to": "sprint-may-1-14",   "relationType": "inSprint" },
+    { "from": "MRMS-2522",         "to": "sprint-may-1-14",   "relationType": "inSprint" },
+    { "from": "MRMS-2565",         "to": "sprint-may-1-14",   "relationType": "inSprint" },
+    { "from": "MRMS-2538",         "to": "sprint-may-1-14",   "relationType": "inSprint" },
+    { "from": "tech-debt-security","to": "repo-ospython",      "relationType": "affects" },
+    { "from": "arch-auth",         "to": "repo-ospython",      "relationType": "governs" },
+    { "from": "arch-auth",         "to": "repo-section2",      "relationType": "governs" },
+    { "from": "arch-costrates",    "to": "repo-section2",      "relationType": "governs" },
+    { "from": "arch-costrates",    "to": "repo-mandatedashboard", "relationType": "governs" }
+  ]
+}
